@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AP-HIS MINSA | Centro de Mando Oficial</title>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script src="paquetes.js"></script>
+    <style>
+        :root {
+            --bg-apple: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --primary: #007AFF;
+            --primary-dark: #0056B3;
+            --primary-soft: #E8F2FF;
+            --admin-color: #5856D6;
+            --admin-soft: #EFEFFE;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF2D55;
+            --text-main: #1C1C1E;
+            --text-secondary: #58585E;
+            --border-color: #D1D1D6;
+            --input-bg: #F2F2F7;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: var(--bg-apple);
+            color: var(--text-main);
+            padding-bottom: 115px;
+            font-size: 16px;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+        }
+        header {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        }
+        .header-left h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-left p {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .admin-btn {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 9px 15px;
+            border-radius: 22px;
+            font-size: 13.5px;
+            font-weight: 700;
+            width: auto;
+            cursor: pointer;
+        }
+        .admin-btn.unlocked {
+            background: linear-gradient(135deg, #5856D6, #007AFF);
+            color: #fff;
+            border: none;
+        }
+
+        #iosToast {
+            position: fixed;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(28, 28, 30, 0.96);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            z-index: 5000;
+            transition: top 0.35s cubic-bezier(0.2, 0.9, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+            max-width: 94%;
+            text-align: center;
+        }
+        #iosToast.show { top: 18px; }
+
+        .container {
+            padding: 14px;
+            max-width: 740px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--bg-apple);
+            padding-bottom: 10px;
+        }
+        .badge {
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 12.5px;
+            padding: 5px 11px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .badge.active {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+        .badge.universal {
+            background: #E8F8EE;
+            color: #1D8348;
+        }
+
+        label.field-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        select, input {
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border-color);
+            background: var(--input-bg);
+            font-size: 16.5px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--text-main);
+            transition: border-color 0.2s, background 0.2s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16.5px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.88;
+        }
+        button.secondary {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+        button.success {
+            background: linear-gradient(135deg, #34C759, #28A745);
+            box-shadow: 0 4px 14px rgba(52, 199, 89, 0.3);
+        }
+        button.admin {
+            background: linear-gradient(135deg, #5856D6, #007AFF);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+        .prof-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .prof-btn {
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+            font-size: 15.5px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+        .prof-btn.selected {
+            background: var(--primary-soft);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
+        }
+        .prof-btn.locked {
+            opacity: 0.42;
+            background: #E5E5EA;
+            cursor: not-allowed;
+        }
+
+        .package-item {
+            background: #F8F9FB;
+            border: 1.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .package-item.selected {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            border-width: 2.5px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.14);
+        }
+        .package-item h4 {
+            font-size: 16.5px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            line-height: 1.3;
+        }
+        .package-item p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .dx-card {
+            background: #F8F9FC;
+            border: 1.5px solid #C7C7CC;
+            border-left: 6px solid var(--primary);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .dx-row-1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .dx-num-badge {
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            font-size: 16px;
+            min-width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dx-desc-input {
+            width: 100%;
+            font-size: 16.5px !important;
+            font-weight: 700 !important;
+            padding: 11px 12px !important;
+            margin-bottom: 0 !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid #AEAEB2 !important;
+            color: #000000 !important;
+        }
+        .inst-hint {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--admin-color);
+            background: var(--admin-soft);
+            padding: 7px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .dx-row-2 {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr 1fr 1fr 1.4fr;
+            gap: 8px;
+            align-items: end;
+            background: #FFFFFF;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .dx-subcol label {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            display: block;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .dx-subcol select, .dx-subcol input {
+            margin-bottom: 0 !important;
+            padding: 10px 4px !important;
+            text-align: center;
+            font-size: 16px !important;
+            font-weight: 800 !important;
+            border-radius: 8px !important;
+        }
+        .cie-input {
+            background: #FFF8E1 !important;
+            border-color: var(--warning) !important;
+            color: #994400 !important;
+        }
+
+        .age-dual-box {
+            background: var(--primary-soft);
+            border: 1.5px solid #9EC5FE;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+        .age-pill-result {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-top: 6px;
+        }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 2000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 22px; padding: 24px; text-align: center; max-height: 92vh; overflow-y: auto; }
+        video#cameraPreview { width: 100%; height: 220px; background: #000; border-radius: 14px; object-fit: cover; margin-bottom: 12px; border: 2px solid var(--primary); }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+        nav button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-weight: 700;
+            width: auto;
+            padding: 4px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        nav button span:first-child { font-size: 21px; }
+        nav button.active { color: var(--primary); font-weight: 800; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        #areaImpresionHIS { display: none; }
+        @media print {
+            @page { size: A4 landscape; margin: 6mm; }
+            body * { visibility: hidden; }
+            #areaImpresionHIS, #areaImpresionHIS * { visibility: visible; }
+            #areaImpresionHIS { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: Arial, sans-serif; color: #000; background: #fff; }
+            tr { page-break-inside: avoid; }
+        }
+        .print-sheet { width: 100%; border-collapse: collapse; font-size: 8.5px; }
+        .print-sheet th, .print-sheet td { border: 1px solid #000; padding: 2.5px 3px; text-align: center; vertical-align: middle; }
+        .print-header-title { text-align: center; font-weight: bold; line-height: 1.25; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="iosToast">✅ <span id="iosToastText">Listo</span></div>
+
+    <header class="no-print">
+        <div class="header-left">
+            <h1>AP-HIS MINSA</h1>
+            <p id="lblModoUsuario">Centro de Mando Unificado</p>
+        </div>
+        <button id="btnAdminToggle" class="admin-btn" onclick="abrirModalAdmin()">🔒 Admin</button>
+    </header>
+
+    <div class="container no-print">
+
+        <div id="tab-atencion" class="tab-content active">
+
+            <!-- SECCIÓN A: DATOS GENERALES -->
+            <div class="card">
+                <div class="card-title">
+                    <span>A. DATOS GENERALES DEL SERVICIO</span>
+                    <span class="badge active" id="lblMesAnioCabecera">2026</span>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label class="field-label">TURNO DE ATENCIÓN</label>
+                        <select id="hisTurno">
+                            <option value="M">🌅 Mañana (M)</option>
+                            <option value="T">☀️ Tarde (T)</option>
+                            <option value="N">🌙 Noche (N)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">DÍA DEL MES</label>
+                        <input type="number" id="hisDia" min="1" max="31">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label class="field-label">ESTABLECIMIENTO (IPRESS)</label>
+                        <input type="text" id="hisIpress" value="C.S. CHILCA">
+                    </div>
+                    <div>
+                        <label class="field-label">UPSS (SERVICIO)</label>
+                        <input type="text" id="hisUpss" value="CONSULTA EXTERNA">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN B: PADRÓN MAESTRO COLABORATIVO (CON FILIACIÓN COMPLETA) -->
+            <div class="card">
+                <div class="card-title">
+                    <span>B. FILIACIÓN DEL PACIENTE (Padrón Colaborativo)</span>
+                    <span class="badge active" id="badgeTotalPadron">Padrón en Nube</span>
+                </div>
+                <button onclick="abrirEscanerDNI()" class="secondary" style="margin-bottom: 14px;">📷 Escanear Código de Barras DNI</button>
+
+                <div class="grid-2">
+                    <div>
+                        <label class="field-label">D.N.I. (8 dígitos — Jala datos)</label>
+                        <input type="text" id="txtDni" inputmode="numeric" placeholder="Escriba o escanee DNI" maxlength="8" oninput="buscarEnPadronLocalYNube(this.value)">
+                    </div>
+                    <div>
+                        <label class="field-label">HISTORIA CLÍNICA</label>
+                        <input type="text" id="txtHC" placeholder="N° H.C." oninput="actualizarPadronEnVivo()">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="field-label">NOMBRES Y APELLIDOS DEL PACIENTE</label>
+                    <input type="text" id="txtNombresPac" placeholder="Apellidos y Nombres completos" oninput="actualizarPadronEnVivo()">
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <label class="field-label">(*) FECHA DE NACIMIENTO</label>
+                        <input type="date" id="txtFechaNac" onchange="calcularEdadHISDesdeFecha()" oninput="calcularEdadHISDesdeFecha()">
+                    </div>
+                    <div>
+                        <label class="field-label">SEXO</label>
+                        <select id="selSexo" onchange="actualizarEdadCompuestaManual()">
+                            <option value="F">👩 Mujer (F)</option>
+                            <option value="M">👨 Varón (M)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="age-dual-box">
+                    <label class="field-label" style="color: var(--primary-dark);">EDAD AUTOMÁTICA O MANUAL (Años + Meses / Meses + Días)</label>
+                    <div class="grid-3">
+                        <div>
+                            <label class="field-label">AÑOS (A)</label>
+                            <input type="number" id="txtEdadAnios" placeholder="0" min="0" style="background:#fff; margin-bottom:0;" oninput="actualizarEdadCompuestaManual()">
+                        </div>
+                        <div>
+                            <label class="field-label">MESES (M)</label>
+                            <input type="number" id="txtEdadMeses" placeholder="0" min="0" max="11" style="background:#fff; margin-bottom:0;" oninput="actualizarEdadCompuestaManual()">
+                        </div>
+                        <div>
+                            <label class="field-label">DÍAS (D)</label>
+                            <input type="number" id="txtEdadDias" placeholder="0" min="0" max="30" style="background:#fff; margin-bottom:0;" oninput="actualizarEdadCompuestaManual()">
+                        </div>
+                    </div>
+                    <div class="age-pill-result" id="lblEdadCompuestaResumen">Edad Oficial HIS: 0 D</div>
+                </div>
+
+                <div class="grid-3">
+                    <div>
+                        <label class="field-label">GESTANTE / PUÉRP.</label>
+                        <select id="selGestante">
+                            <option value="">No aplica</option>
+                            <option value="G">Gestante (G)</option>
+                            <option value="P">Puérpera (P)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">FINANCIADOR</label>
+                        <select id="selFinanc" onchange="actualizarPadronEnVivo()">
+                            <option value="2">2 - SIS</option>
+                            <option value="1">1 - Pagante</option>
+                            <option value="3">3 - EsSalud</option>
+                            <option value="10">10 - Otros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">ETNIA</label>
+                        <input type="text" id="txtEtnia" value="80">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <label class="field-label">DISTRITO PROCEDENCIA</label>
+                        <input type="text" id="txtDistrito" value="CHILCA" oninput="actualizarPadronEnVivo()">
+                    </div>
+                    <div>
+                        <label class="field-label">CENTRO POBLADO</label>
+                        <input type="text" id="txtCentroPob" value="CHILCA" oninput="actualizarPadronEnVivo()">
+                    </div>
+                </div>
+
+                <details style="margin-top:6px; background:var(--input-bg); padding:14px; border-radius:14px;">
+                    <summary style="font-size:15px; font-weight:800; color:var(--primary-dark); cursor:pointer;">➕ Antropometría y Condición (N/C/R)</summary>
+                    <div class="grid-2" style="margin-top:12px;">
+                        <div>
+                            <label class="field-label">PESO (kg)</label>
+                            <input type="text" id="txtPeso" placeholder="Ej. 10.5" style="background:#fff;">
+                        </div>
+                        <div>
+                            <label class="field-label">TALLA (cm)</label>
+                            <input type="text" id="txtTalla" placeholder="Ej. 78" style="background:#fff;">
+                        </div>
+                        <div>
+                            <label class="field-label">HEMOGLOBINA (Hb)</label>
+                            <input type="text" id="txtHb" placeholder="Ej. 11.8" style="background:#fff;">
+                        </div>
+                        <div>
+                            <label class="field-label">PC / Pab (cm)</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="text" id="txtPC" placeholder="PC" style="background:#fff;">
+                                <input type="text" id="txtPab" placeholder="Pab" style="background:#fff;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <label class="field-label">FECHA ÚLT. Hb</label>
+                            <input type="date" id="txtFechaHb" style="background:#fff;">
+                        </div>
+                        <div>
+                            <label class="field-label">F. ÚLTIMA REGLA (FUR)</label>
+                            <input type="date" id="txtFUR" style="background:#fff;">
+                        </div>
+                        <div>
+                            <label class="field-label">ESTABLECIMIENTO (N/C/R)</label>
+                            <select id="selCondEstab" style="background:#fff;">
+                                <option value="C">C (Continuador)</option>
+                                <option value="N">N (Nuevo)</option>
+                                <option value="R">R (Reingresante)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">SERVICIO (N/C/R)</label>
+                            <select id="selCondServ" style="background:#fff;">
+                                <option value="C">C (Continuador)</option>
+                                <option value="N">N (Nuevo)</option>
+                                <option value="R">R (Reingresante)</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- SECCIÓN C: SELECCIÓN DE PROGRAMA Y PAQUETE -->
+            <div class="card">
+                <div class="card-title">
+                    <span>C. SELECCIÓN DE PROGRAMA Y PAQUETE</span>
+                    <span class="badge" id="badgeCandado">🔒 Rol Fijo</span>
+                </div>
+
+                <label class="field-label">1. Profesión Asignada:</label>
+                <div class="prof-grid" id="profGrid"></div>
+
+                <label class="field-label">2. Programa o Categoría (<span id="countProg">0</span> disponibles):</label>
+                <select id="selPrograma" onchange="cargarSubcategorias()"></select>
+
+                <label class="field-label">3. Subcategoría / Etapa o Grupo (<span id="countSub">0</span> subgrupos):</label>
+                <select id="selSubcategoria" onchange="cargarPaquetesCascada()"></select>
+
+                <label class="field-label">4. Control o Paquete Específico (<span id="countPaq">0</span> paquetes):</label>
+                <div id="packageList" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
+            </div>
+
+            <!-- SECCIÓN D: LÍNEAS HIS PRELLENADAS EN 2 FILAS AMPLIAS -->
+            <div class="card">
+                <div class="card-title">
+                    <span>D. LÍNEAS HIS PRELLENADAS (<span id="lblCountLineas">0</span> líneas)</span>
+                    <button onclick="agregarLineaExtra()" class="secondary" style="width:auto; padding:8px 14px; font-size:13.5px;">+ Añadir Línea</button>
+                </div>
+                <div id="hisCardsContainer"></div>
+
+                <div class="grid-2" style="margin-top: 16px;">
+                    <button onclick="finalizarAtencion()" class="success">💾 Guardar Atención HIS</button>
+                    <button onclick="imprimirHojaHISOficial()" style="background:#1C1C1E;">🖨️ Imprimir Hoja HIS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 2: CONSOLIDADO Y ESTADÍSTICAS CON FILIACIÓN -->
+        <div id="tab-consolidado" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span>Hoja Diaria HIS, Padrón y Estadísticas</span>
+                    <button onclick="imprimirHojaHISOficial()" style="width:auto; padding:8px 14px; font-size:13.5px; background:#1C1C1E;">🖨️ Imprimir PDF Oficial</button>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label class="field-label">Filtrar Profesión:</label>
+                        <select id="filtroProfEstadistica" onchange="renderConsolidado()">
+                            <option value="TODOS">Todas las Profesiones</option>
+                            <option value="Enfermería">Enfermería</option>
+                            <option value="Medicina">Medicina</option>
+                            <option value="Obstetricia">Obstetricia</option>
+                            <option value="Odontología">Odontología</option>
+                            <option value="Psicología / Trabajo Social">Psicología / T. Social</option>
+                            <option value="Nutrición">Nutrición</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Agrupar Estadística por:</label>
+                        <select id="filtroAgrupacion" onchange="renderConsolidado()">
+                            <option value="programa">Programa Sanitario</option>
+                            <option value="nombre_paquete">Paquete / Control</option>
+                            <option value="profesionalNom">Profesional</option>
+                            <option value="dni_paciente">Por Paciente (DNI + Nombres)</option>
+                            <option value="distrito">Distrito Procedencia</option>
+                            <option value="fecha">Fecha de Atención</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="graficoBarras" style="margin-bottom: 14px; padding: 14px; background: var(--input-bg); border-radius: 14px; font-size:14.5px;"></div>
+                <div class="grid-2" style="margin-bottom: 12px;">
+                    <button onclick="exportarCSV()" class="secondary" style="font-size:14px;">📥 Exportar Atenciones (Con Filiación)</button>
+                    <button onclick="exportarPadronCSV()" class="secondary" style="font-size:14px;">👥 Exportar Padrón Pacientes</button>
+                </div>
+                <button onclick="descargarEstadisticasDeFirestore()" class="admin" style="font-size:14px; margin-bottom:12px;">☁️ Descargar Todas las Atenciones de Firestore (Con Filiación)</button>
+                <button onclick="limpiarHojaDelDia()" class="secondary" style="font-size:14px; color:var(--danger); margin-bottom:12px;">🗑️ Limpiar Hoja Local del Turno (Conserva Nube y Padrón)</button>
+                <div id="listaConsolidado" style="max-height: 420px; overflow-y: auto; font-size: 14px;"></div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 3: ADMIN Y SEGURIDAD -->
+        <div id="tab-config" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span>🔐 Centro de Mando del Administrador</span>
+                    <span class="badge" id="badgeEstadoAdmin">Solo Admin</span>
+                </div>
+
+                <label class="field-label">URL de tu Google Sheets (Super Tabla Maestra):</label>
+                <input type="text" id="urlSheets" value="https://script.google.com/macros/s/AKfycbx6w--PW_iWAB4HQYm4FSnqBW77t8nWXuYcq0wF1A84yZQ8BVlfqIUHli9DP3yUrkvp/exec" disabled>
+                <button onclick="sincronizarTodoDesdeNube()" id="btnSyncSeguridad" class="secondary" style="margin-bottom:14px; font-size:14.5px;" disabled>🔄 Sincronizar Catálogo, Padrón y Seguridad (Firestore + G.Drive)</button>
+
+                <label class="field-label">Cambiar Clave Maestra Local / Administrador:</label>
+                <input type="text" id="cfgNuevaClaveAdmin" placeholder="Nueva Clave (Actual: 2026)" disabled>
+
+                <hr style="margin: 14px 0; border: 0.5px solid var(--border-color);">
+
+                <div class="card-title"><span>👥 Lista Blanca de Profesionales Autorizados</span></div>
+                <div id="listaUsuariosAutorizados" style="font-size:14px; margin-bottom:12px;"></div>
+
+                <div id="formNuevoUsuarioAdmin" style="display:none; background:var(--input-bg); padding:14px; border-radius:14px;">
+                    <label class="field-label">Autorizar Nuevo Profesional:</label>
+                    <div class="grid-2">
+                        <input type="text" id="nuevoUserDni" placeholder="DNI (8 dígitos)" maxlength="8" style="background:#fff;">
+                        <input type="text" id="nuevoUserPin" placeholder="PIN Personal" style="background:#fff;">
+                    </div>
+                    <div class="grid-2">
+                        <input type="text" id="nuevoUserNombre" placeholder="Nombres y Apellidos" style="background:#fff;">
+                        <select id="nuevoUserProf" style="background:#fff;">
+                            <option value="Enfermería">Enfermería</option>
+                            <option value="Medicina">Medicina</option>
+                            <option value="Obstetricia">Obstetricia</option>
+                            <option value="Odontología">Odontología</option>
+                            <option value="Psicología / Trabajo Social">Psicología / T. Social</option>
+                            <option value="Nutrición">Nutrición</option>
+                        </select>
+                    </div>
+                    <button onclick="agregarUsuarioAutorizado()" class="admin">➕ Autorizar Usuario</button>
+                </div>
+
+                <button onclick="guardarConfigDispositivo()" class="success" style="margin-top:14px;">Guardar Configuración</button>
+                <button onclick="cerrarSesionDispositivo()" class="secondary" style="margin-top:10px; color:var(--danger);">🔒 Cambiar Usuario / Cerrar Sesión</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ÁREA IMPRESIÓN HIS OFICIAL MINSA -->
+    <div id="areaImpresionHIS">
+        <div class="print-header-title">
+            <div style="font-size:13px;">MINISTERIO DE SALUD</div>
+            <div style="font-size:10px;">OFICINA GENERAL DE TECNOLOGIAS DE LA INFORMACION</div>
+            <div style="font-size:10px;">OFICINA DE GESTION DE LA INFORMACION</div>
+            <div style="font-size:12px; margin-top:2px;">Registro Diario de Atención y Otras Actividades de Salud</div>
+        </div>
+
+        <table class="print-sheet" style="margin-bottom:4px;">
+            <tr>
+                <th style="width:6%;">LOTE</th>
+                <th style="width:6%;">PÁGINA</th>
+                <th style="width:6%;">AÑO</th>
+                <th style="width:7%;">MES</th>
+                <th style="width:28%;">NOMBRE DE ESTABLECIMIENTO DE SALUD (IPRESS)</th>
+                <th style="width:20%;">UNIDAD PRODUCTORA DE SERVICIOS (UPSS)</th>
+                <th style="width:8%;">DNI</th>
+                <th style="width:19%;">NOMBRE DEL RESPONSABLE DE LA ATENCIÓN</th>
+            </tr>
+            <tr>
+                <td id="prLote">&nbsp;</td>
+                <td id="prPagina">&nbsp;</td>
+                <td id="prAnio">2026</td>
+                <td id="prMes">11</td>
+                <td id="prIpress">C.S. CHILCA</td>
+                <td id="prUpss">CONSULTA EXTERNA</td>
+                <td id="prDniResp"></td>
+                <td id="prNomResp"></td>
+            </tr>
+        </table>
+
+        <table class="print-sheet">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:2.5%;">N°</th>
+                    <th rowspan="2" style="width:3%;">DÍA</th>
+                    <th style="width:9%;">D.N.I.</th>
+                    <th style="width:4%;">FINANC.</th>
+                    <th style="width:10%;">DISTRITO DE PROCEDENCIA</th>
+                    <th rowspan="2" style="width:5.5%;">EDAD</th>
+                    <th rowspan="2" style="width:3%;">SEXO</th>
+                    <th style="width:4.5%;">PC / Pab</th>
+                    <th style="width:6%;">EVALUACIÓN ANTROPOM.</th>
+                    <th rowspan="2" style="width:3%;">ESTAB</th>
+                    <th rowspan="2" style="width:3%;">SERV</th>
+                    <th rowspan="2" style="width:25%;">DIAGNÓSTICO MOTIVO DE CONSULTA Y/O ACTIVIDAD DE SALUD</th>
+                    <th colspan="3" style="width:5.5%;">TIPO DX</th>
+                    <th colspan="3" style="width:8%;">VALOR LAB</th>
+                    <th rowspan="2" style="width:8%;">CÓDIGO CIE / CPT</th>
+                </tr>
+                <tr>
+                    <th>HIST. CLÍNICA / GEST.</th>
+                    <th>ETNIA</th>
+                    <th>CENTRO POBLADO</th>
+                    <th>Cm</th>
+                    <th>PESO / TALLA / Hb</th>
+                    <th>P</th><th>D</th><th>R</th>
+                    <th>1°</th><th>2°</th><th>3°</th>
+                </tr>
+            </thead>
+            <tbody id="printBodyRows"></tbody>
+        </table>
+    </div>
+
+    <!-- MODALES -->
+    <div id="setupModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 8px; font-size: 21px;">🛡️ Acceso AP-HIS MINSA</h3>
+            <p style="font-size: 14.5px; color: var(--text-secondary); margin-bottom: 14px;">Ingrese su DNI y PIN asignado (o ingrese la Clave Maestra <b>2026</b>).</p>
+            <input type="text" id="loginDni" placeholder="Su N° de DNI (8 dígitos)" maxlength="8">
+            <input type="password" id="loginPin" placeholder="Su PIN o Clave Maestra (2026)">
+            <button onclick="validarAccesoDistribuido()" class="success">Ingresar al Aplicativo</button>
+            <p style="font-size:12.5px; color:var(--text-secondary); margin-top:12px;">
+                <b>Accesos rápidos:</b><br>
+                • Admin Total: PIN <b>2026</b><br>
+                • Enfermería: DNI <b>11111111</b> / PIN <b>1234</b><br>
+                • Medicina: DNI <b>22222222</b> / PIN <b>1234</b>
+            </p>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 8px; font-size: 20px;">🔐 Clave Maestra Admin</h3>
+            <input type="password" id="txtPinAdmin" placeholder="Clave Maestra (2026)" style="text-align: center; font-size: 20px; letter-spacing: 4px;">
+            <button onclick="verificarPinAdmin()" class="admin" style="margin-bottom: 10px;">Desbloquear Todo</button>
+            <button onclick="cerrarModalAdmin()" class="secondary">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="scannerModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 6px; font-size: 19px;">📸 Escáner de DNI</h3>
+            <video id="cameraPreview" playsinline muted></video>
+            <p id="scannerStatus" style="font-size: 13.5px; color: var(--primary); margin-bottom: 12px; font-weight:700;">Iniciando cámara...</p>
+            <div class="grid-2" style="margin-bottom: 10px;">
+                <button onclick="cambiarCamaraDNI()" class="secondary" style="font-size:14px; padding:12px;">🔄 Cambiar Cámara</button>
+                <button onclick="procesarDniSimulado()" class="success" style="font-size:14px; padding:12px;">⌨️ Digitar Manual</button>
+            </div>
+            <button onclick="cerrarEscanerDNI()" class="secondary" style="color:var(--danger);">Cerrar Escáner</button>
+        </div>
+    </div>
+
+    <nav class="no-print">
+        <button onclick="switchTab('atencion', this)" class="active"><span>📋</span><span>Registro HIS</span></button>
+        <button onclick="switchTab('consolidado', this)"><span>🖨️</span><span>Hoja / Estadísticas</span></button>
+        <button onclick="switchTab('config', this)"><span>🔐</span><span>Admin</span></button>
+    </nav>
+
+    <!-- FIREBASE FIRESTORE (PROYECTO OFICIAL ACTIVO: ap-his-3d302) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            addDoc,
+            query,
+            orderBy,
+            limit
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtD98b4O7MnaDsg9u39LI0Em7b7dDMyuo",
+            authDomain: "ap-his-3d302.firebaseapp.com",
+            projectId: "ap-his-3d302",
+            storageBucket: "ap-his-3d302.firebasestorage.app",
+            appId: "1:363893099624:android:a1671c21fa2197ab047fdd"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            window.dbFirestore = db;
+
+            // 1. Guardar atención completa CON FILIACIÓN en Firestore
+            window.enviarAFirebase = async (reg) => {
+                try {
+                    await setDoc(doc(db, "atenciones_his", reg.id_atencion), reg);
+                } catch (e) {
+                    console.error("Error guardando atención en Firestore:", e);
+                }
+            };
+
+            // 2. Guardar/Actualizar paciente en Padrón Colaborativo de Firestore
+            window.guardarPacienteEnFirestore = async (dni, datosPac) => {
+                if (!dni || dni.length !== 8) return;
+                try {
+                    await setDoc(doc(db, "padron_pacientes", dni), {
+                        ...datosPac,
+                        dni: dni,
+                        actualizado: new Date().toISOString()
+                    }, { merge: true });
+                } catch (e) {
+                    console.error("Error guardando padrón en Firestore:", e);
+                }
+            };
+
+            // 3. Buscar paciente por DNI en Padrón de Firestore en tiempo real
+            window.buscarPacienteEnFirestore = async (dni) => {
+                if (!dni || dni.length !== 8) return null;
+                try {
+                    const snap = await getDoc(doc(db, "padron_pacientes", dni));
+                    if (snap.exists()) {
+                        return snap.data();
+                    }
+                } catch (e) {}
+                return null;
+            };
+
+            // 4. Sincronizar catálogo maestro desde Firestore ('configuracion/catalogo_web')
+            window.cargarCatalogoDesdeFirestore = async () => {
+                try {
+                    const snap = await getDoc(doc(db, "configuracion", "catalogo_web"));
+                    if (snap.exists() && Array.isArray(snap.data().paquetes) && snap.data().paquetes.length > 0) {
+                        window.actualizarCatalogoEnCaliente(snap.data().paquetes);
+                        return snap.data().paquetes.length;
+                    }
+                } catch (e) {}
+                return 0;
+            };
+
+            // 5. Descargar todas las atenciones con filiación desde Firestore para estadísticas
+            window.obtenerAtencionesDeFirestore = async () => {
+                try {
+                    const snap = await getDocs(collection(db, "atenciones_his"));
+                    const lista = [];
+                    snap.forEach(d => lista.push(d.data()));
+                    return lista;
+                } catch (e) {
+                    console.error("Error descargando atenciones:", e);
+                    return [];
+                }
+            };
+
+            // Sincronización silenciosa al iniciar
+            setTimeout(() => {
+                window.cargarCatalogoDesdeFirestore();
+            }, 600);
+        } catch (err) {
+            console.error("Error inicializando Firebase:", err);
+        }
+    </script>
+
+    <script>
+        const URL_SHEETS_PRECONFIGURADA = "https://script.google.com/macros/s/AKfycbx6w--PW_iWAB4HQYm4FSnqBW77t8nWXuYcq0wF1A84yZQ8BVlfqIUHli9DP3yUrkvp/exec";
+        try {
+            localStorage.setItem("aphis_url_sheets", URL_SHEETS_PRECONFIGURADA);
+        } catch (e) {}
+
+        let claveMaestraActual = "2026";
+        try {
+            claveMaestraActual = localStorage.getItem("aphis_clave_maestra") || "2026";
+        } catch (e) {}
+
+        let usuariosAutorizados = [
+            { dni: "00000000", pin: "2026", nombre: "Alfredo Puertas (Administrador)", prof: "Medicina", estado: "ACTIVO", rol: "ADMIN" },
+            { dni: "11111111", pin: "1234", nombre: "Lic. Enfermería Autorizada", prof: "Enfermería", estado: "ACTIVO", rol: "USER" },
+            { dni: "22222222", pin: "1234", nombre: "Médico Autorizado", prof: "Medicina", estado: "ACTIVO", rol: "USER" },
+            { dni: "33333333", pin: "1234", nombre: "Obstetra Autorizada", prof: "Obstetricia", estado: "ACTIVO", rol: "USER" }
+        ];
+        try {
+            const guardados = JSON.parse(localStorage.getItem("aphis_usuarios_whitelist") || "null");
+            if (Array.isArray(guardados) && guardados.length > 0) usuariosAutorizados = guardados;
+        } catch (e) {}
+
+        let padronPacientes = {};
+        try {
+            padronPacientes = JSON.parse(localStorage.getItem("aphis_padron_pacientes_real") || "{}") || {};
+        } catch (e) {
+            padronPacientes = {};
+        }
+
+        let catalogoMaestro = window.CATALOGO_PAQUETES_OFICIAL || [];
+        const listaProfesiones = ["Enfermería", "Medicina", "Obstetricia", "Odontología", "Psicología / Trabajo Social", "Nutrición"];
+
+        let toastTimeout = null;
+        function mostrarNotificacion(msj) {
+            const t = document.getElementById("iosToast");
+            if (!t) return;
+            document.getElementById("iosToastText").innerText = msj;
+            t.classList.add("show");
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => t.classList.remove("show"), 2800);
+        }
+
+        window.actualizarCatalogoEnCaliente = function(nuevosPaquetes) {
+            if (!Array.isArray(nuevosPaquetes) || nuevosPaquetes.length === 0) return;
+            catalogoMaestro = nuevosPaquetes;
+            cargarProgramas();
+        };
+
+        let perfilFijo = null;
+        let dniProfesionalActivo = "";
+        let nombreProfesional = "Administrador Maestro";
+        try {
+            perfilFijo = localStorage.getItem("aphis_profesion_fija") || null;
+            dniProfesionalActivo = localStorage.getItem("aphis_dni_prof") || "";
+            nombreProfesional = localStorage.getItem("aphis_nombre_prof") || "Profesional MINSA";
+        } catch (e) {}
+
+        let esAdmin = false;
+        let profesionActiva = perfilFijo || "Enfermería";
+        let paqueteSeleccionado = null;
+        let atencionesLocal = [];
+        try {
+            atencionesLocal = JSON.parse(localStorage.getItem("atenciones_aphis_oficial") || "[]") || [];
+        } catch (e) {
+            atencionesLocal = [];
+        }
+
+        let codeReader = null;
+        let escaneoProcesado = false;
+        let camarasDisponibles = [];
+        let indiceCamaraActual = 0;
+
+        function actualizarContadorPadron() {
+            const b = document.getElementById("badgeTotalPadron");
+            if (b) {
+                const n = Object.keys(padronPacientes).length;
+                b.innerText = n > 0 ? `${n} Pacientes en Padrón` : "Padrón Colaborativo";
+            }
+        }
+
+        function inicializarApp() {
+            try {
+                const hoy = new Date();
+                document.getElementById("hisDia").value = hoy.getDate();
+                document.getElementById("lblMesAnioCabecera").innerText = `MES: ${hoy.getMonth()+1} / AÑO: ${hoy.getFullYear()}`;
+                document.getElementById("urlSheets").value = URL_SHEETS_PRECONFIGURADA;
+
+                profesionActiva = perfilFijo || "Enfermería";
+                renderizarBotonesProfesion();
+                cargarProgramas();
+                renderListaUsuariosAdmin();
+                actualizarContadorPadron();
+
+                if (!perfilFijo || !dniProfesionalActivo) {
+                    document.getElementById("setupModal").style.display = "flex";
+                }
+            } catch (err) {
+                console.error("Error inicializando:", err);
+            }
+        }
+
+        function validarAccesoDistribuido() {
+            const dniIn = document.getElementById("loginDni").value.trim();
+            const pinIn = document.getElementById("loginPin").value.trim();
+
+            if (pinIn === claveMaestraActual) {
+                esAdmin = true;
+                perfilFijo = "Enfermería";
+                profesionActiva = "Enfermería";
+                dniProfesionalActivo = dniIn || "ADMIN-01";
+                nombreProfesional = "Alfredo Puertas (Admin)";
+                try {
+                    localStorage.setItem("aphis_profesion_fija", perfilFijo);
+                    localStorage.setItem("aphis_dni_prof", dniProfesionalActivo);
+                    localStorage.setItem("aphis_nombre_prof", nombreProfesional);
+                } catch (e) {}
+                document.getElementById("setupModal").style.display = "none";
+                activarInterfazAdmin(true);
+                renderizarBotonesProfesion();
+                cargarProgramas();
+                mostrarNotificacion(`🔓 Modo Administrador Maestro (${catalogoMaestro.length} paquetes activos)`);
+                return;
+            }
+
+            const user = usuariosAutorizados.find(u => u.dni === dniIn && u.pin === pinIn);
+            if (!user) {
+                mostrarNotificacion("⛔ DNI o PIN incorrecto (Use PIN 2026 para Admin)");
+                return;
+            }
+            if (user.estado !== "ACTIVO") {
+                mostrarNotificacion("⛔ Su acceso ha sido bloqueado");
+                return;
+            }
+
+            perfilFijo = user.prof;
+            profesionActiva = user.prof;
+            dniProfesionalActivo = user.dni;
+            nombreProfesional = user.nombre;
+            try {
+                localStorage.setItem("aphis_profesion_fija", perfilFijo);
+                localStorage.setItem("aphis_dni_prof", dniProfesionalActivo);
+                localStorage.setItem("aphis_nombre_prof", nombreProfesional);
+            } catch (e) {}
+            document.getElementById("setupModal").style.display = "none";
+            renderizarBotonesProfesion();
+            cargarProgramas();
+            mostrarNotificacion(`✅ Bienvenido: ${user.nombre} (${user.prof})`);
+        }
+
+        function cerrarSesionDispositivo() {
+            try {
+                localStorage.removeItem("aphis_profesion_fija");
+                localStorage.removeItem("aphis_dni_prof");
+            } catch (e) {}
+            esAdmin = false;
+            document.getElementById("setupModal").style.display = "flex";
+        }
+
+        // ==================== ESCÁNER DE DNI PERUANO (ZXING OPTIMIZADO) ====================
+        async function abrirEscanerDNI() {
+            escaneoProcesado = false;
+            document.getElementById('scannerModal').style.display = 'flex';
+            const status = document.getElementById('scannerStatus');
+            status.innerText = "Activando cámara para código de barras / PDF417...";
+
+            try {
+                if (typeof ZXing === 'undefined') {
+                    status.innerText = "Librería de escaneo no disponible. Use ingreso manual.";
+                    return;
+                }
+                if (codeReader) {
+                    try { codeReader.reset(); } catch (e) {}
+                }
+
+                // Activar formatos 1D (anverso DNI azul) y 2D (reverso PDF417 / QR)
+                const hints = new Map();
+                const formats = [
+                    ZXing.BarcodeFormat.CODE_39,
+                    ZXing.BarcodeFormat.CODE_128,
+                    ZXing.BarcodeFormat.PDF_417,
+                    ZXing.BarcodeFormat.QR_CODE,
+                    ZXing.BarcodeFormat.EAN_13,
+                    ZXing.BarcodeFormat.ITF
+                ];
+                hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+                hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+
+                codeReader = new ZXing.BrowserMultiFormatReader(hints);
+                camarasDisponibles = await codeReader.listVideoInputDevices();
+
+                if (camarasDisponibles.length > 0) {
+                    // Preferir cámara trasera ("back", "trasera", "environment")
+                    const idxTrasera = camarasDisponibles.findIndex(c => /back|traser|rear|environment/i.test(c.label));
+                    indiceCamaraActual = idxTrasera >= 0 ? idxTrasera : (camarasDisponibles.length - 1);
+                    await iniciarLecturaConCamara(camarasDisponibles[indiceCamaraActual].deviceId);
+                } else {
+                    await iniciarLecturaConCamara(null);
+                }
+            } catch (e) {
+                console.error("Error cámara:", e);
+                status.innerText = "Permita el acceso a la cámara o use el botón 'Digitar Manual'.";
+            }
+        }
+
+        async function iniciarLecturaConCamara(deviceId) {
+            const status = document.getElementById('scannerStatus');
+            status.innerText = "Enfoque el código de barras frontal o posterior del DNI...";
+            const constraints = deviceId
+                ? { video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } }
+                : { video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } };
+
+            await codeReader.decodeFromConstraints(constraints, 'cameraPreview', (result, err) => {
+                if (result && !escaneoProcesado) {
+                    const rawText = result.getText ? result.getText() : (result.text || "");
+                    if (/\d{8}/.test(rawText)) {
+                        escaneoProcesado = true;
+                        cerrarEscanerDNI();
+                        interpretarTramaDNI(rawText);
+                    }
+                }
+            });
+        }
+
+        async function cambiarCamaraDNI() {
+            if (!camarasDisponibles || camarasDisponibles.length <= 1) {
+                mostrarNotificacion("Solo se detectó 1 cámara en este dispositivo");
+                return;
+            }
+            try {
+                if (codeReader) codeReader.reset();
+                indiceCamaraActual = (indiceCamaraActual + 1) % camarasDisponibles.length;
+                await iniciarLecturaConCamara(camarasDisponibles[indiceCamaraActual].deviceId);
+            } catch (e) {}
+        }
+
+        async function interpretarTramaDNI(trama) {
+            const matchDni = trama.match(/\b\d{8}\b/) || trama.match(/\d{8}/);
+            if (!matchDni) {
+                mostrarNotificacion("⚠️ Enfoque nuevamente los 8 dígitos del DNI");
+                return;
+            }
+            const dni = matchDni[0];
+            document.getElementById('txtDni').value = dni;
+            document.getElementById('txtHC').value = dni;
+
+            document.getElementById('txtNombresPac').value = "";
+            document.getElementById('txtFechaNac').value = "";
+            document.getElementById('txtEdadAnios').value = "";
+            document.getElementById('txtEdadMeses').value = "";
+            document.getElementById('txtEdadDias').value = "";
+
+            let encontradoEnTrama = false;
+
+            if (trama.length > 20) {
+                const matchMRZ = trama.match(/(\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d([MF])\d{7}/);
+                if (matchMRZ) {
+                    const yy = parseInt(matchMRZ[1], 10);
+                    const anio = yy > 30 ? (1900 + yy) : (2000 + yy);
+                    const fechaISO = `${anio}-${matchMRZ[2]}-${matchMRZ[3]}`;
+                    document.getElementById('txtFechaNac').value = fechaISO;
+                    document.getElementById('selSexo').value = matchMRZ[4];
+                    calcularEdadHISDesdeFecha();
+                    encontradoEnTrama = true;
+                }
+                const matchFechaISO = trama.match(/(19\d{2}|20\d{2})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])/);
+                if (!encontradoEnTrama && matchFechaISO) {
+                    document.getElementById('txtFechaNac').value = matchFechaISO[0].replace(/\//g, '-');
+                    calcularEdadHISDesdeFecha();
+                    encontradoEnTrama = true;
+                }
+                if (trama.includes("<M") || trama.includes("|M|") || trama.includes("/M/")) {
+                    document.getElementById('selSexo').value = "M";
+                } else if (trama.includes("<F") || trama.includes("|F|") || trama.includes("/F/")) {
+                    document.getElementById('selSexo').value = "F";
+                }
+            }
+
+            // Buscar en Padrón Local y en Firestore
+            await buscarEnPadronLocalYNube(dni);
+            if (!document.getElementById('txtNombresPac').value) {
+                document.getElementById('txtNombresPac').focus();
+                mostrarNotificacion(`📋 DNI ${dni} leído. Ingrese Nombres y Fecha Nac.`);
+            }
+        }
+
+        async function buscarEnPadronLocalYNube(dni) {
+            const limpio = dni.trim();
+            if (limpio.length === 8) {
+                if (!document.getElementById('txtHC').value) {
+                    document.getElementById('txtHC').value = limpio;
+                }
+                if (padronPacientes[limpio]) {
+                    cargarDatosDePadron(limpio);
+                    mostrarNotificacion(`✨ Paciente cargado del Padrón Local`);
+                    return;
+                }
+                if (window.buscarPacienteEnFirestore) {
+                    const remoto = await window.buscarPacienteEnFirestore(limpio);
+                    if (remoto) {
+                        padronPacientes[limpio] = remoto;
+                        try {
+                            localStorage.setItem("aphis_padron_pacientes_real", JSON.stringify(padronPacientes));
+                        } catch (e) {}
+                        cargarDatosDePadron(limpio);
+                        actualizarContadorPadron();
+                        mostrarNotificacion(`☁️ Paciente cargado del Padrón en Firestore`);
+                    }
+                }
+            }
+            actualizarEdadCompuestaManual();
+        }
+
+        function actualizarPadronEnVivo() {
+            const dni = document.getElementById('txtDni').value.trim();
+            const nom = document.getElementById('txtNombresPac').value.trim();
+            if (dni.length === 8 && nom.length > 2) {
+                const edObj = obtenerObjetoEdadActual();
+                padronPacientes[dni] = {
+                    nombres: nom,
+                    fechaNac: document.getElementById('txtFechaNac').value,
+                    sexo: document.getElementById('selSexo').value,
+                    edadAnios: edObj.anios,
+                    edadMeses: edObj.meses,
+                    edadDias: edObj.dias,
+                    hc: document.getElementById('txtHC').value || dni,
+                    financ: document.getElementById('selFinanc').value,
+                    distrito: document.getElementById('txtDistrito').value,
+                    centroPob: document.getElementById('txtCentroPob').value
+                };
+                try {
+                    localStorage.setItem("aphis_padron_pacientes_real", JSON.stringify(padronPacientes));
+                } catch (e) {}
+                actualizarContadorPadron();
+            }
+        }
+
+        function cargarDatosDePadron(dni) {
+            const p = padronPacientes[dni];
+            if (!p) return;
+            document.getElementById('txtNombresPac').value = p.nombres || "";
+            document.getElementById('txtFechaNac').value = p.fechaNac || "";
+            document.getElementById('selSexo').value = p.sexo || "F";
+            document.getElementById('txtHC').value = p.hc || dni;
+            document.getElementById('selFinanc').value = p.financ || "2";
+            document.getElementById('txtDistrito').value = p.distrito || "CHILCA";
+            document.getElementById('txtCentroPob').value = p.centroPob || "CHILCA";
+            if (p.fechaNac) {
+                calcularEdadHISDesdeFecha();
+            } else {
+                document.getElementById('txtEdadAnios').value = p.edadAnios || "";
+                document.getElementById('txtEdadMeses').value = p.edadMeses || "";
+                document.getElementById('txtEdadDias').value = p.edadDias || "";
+                actualizarEdadCompuestaManual();
+            }
+        }
+
+        function calcularEdadHISDesdeFecha() {
+            const fNacStr = document.getElementById('txtFechaNac').value;
+            if (!fNacStr) return;
+            const partes = fNacStr.split("-");
+            if (partes.length !== 3) return;
+            const nac = new Date(parseInt(partes[0],10), parseInt(partes[1],10)-1, parseInt(partes[2],10));
+            const hoy = new Date();
+            if (hoy < nac) return;
+
+            let anios = hoy.getFullYear() - nac.getFullYear();
+            let meses = hoy.getMonth() - nac.getMonth();
+            let dias = hoy.getDate() - nac.getDate();
+
+            if (dias < 0) {
+                meses--;
+                const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
+                dias += ultimoDiaMesAnterior;
+            }
+            if (meses < 0) {
+                anios--;
+                meses += 12;
+            }
+
+            document.getElementById('txtEdadAnios').value = anios > 0 ? anios : "";
+            document.getElementById('txtEdadMeses').value = meses > 0 ? meses : "";
+            document.getElementById('txtEdadDias').value = dias > 0 ? dias : (anios === 0 && meses === 0 ? 1 : "");
+            actualizarEdadCompuestaManual();
+            actualizarPadronEnVivo();
+        }
+
+        function obtenerObjetoEdadActual() {
+            const a = parseInt(document.getElementById('txtEdadAnios').value || "0", 10);
+            const m = parseInt(document.getElementById('txtEdadMeses').value || "0", 10);
+            const d = parseInt(document.getElementById('txtEdadDias').value || "0", 10);
+
+            let partes = [];
+            if (a > 0) partes.push(`${a}A`);
+            if (m > 0) partes.push(`${m}M`);
+            if (d > 0 && a === 0) partes.push(`${d}D`);
+            if (partes.length === 0) partes.push("0D");
+
+            const textoCompuesto = partes.join(" ");
+            let valorPrincipal = a;
+            let tipoPrincipal = "A";
+            if (a === 0 && m > 0) {
+                valorPrincipal = m;
+                tipoPrincipal = "M";
+            } else if (a === 0 && m === 0) {
+                valorPrincipal = d;
+                tipoPrincipal = "D";
+            }
+
+            return { anios: a, meses: m, dias: d, textoCompuesto, valorPrincipal, tipoPrincipal };
+        }
+
+        function actualizarEdadCompuestaManual() {
+            const ed = obtenerObjetoEdadActual();
+            const lbl = document.getElementById("lblEdadCompuestaResumen");
+            if (lbl) lbl.innerText = `Edad Oficial HIS: ${ed.textoCompuesto}`;
+            actualizarPadronEnVivo();
+        }
+
+        function procesarDniSimulado() {
+            escaneoProcesado = true;
+            cerrarEscanerDNI();
+            const dniInput = prompt("Ingrese los 8 dígitos del DNI manualmente:", "");
+            if (dniInput && dniInput.trim().length === 8) {
+                interpretarTramaDNI(dniInput.trim());
+            }
+        }
+
+        function cerrarEscanerDNI() {
+            try {
+                if (codeReader) codeReader.reset();
+                const v = document.getElementById('cameraPreview');
+                if (v && v.srcObject) {
+                    v.srcObject.getTracks().forEach(t => t.stop());
+                    v.srcObject = null;
+                }
+            } catch (e) {}
+            document.getElementById('scannerModal').style.display = 'none';
+        }
+
+        function renderizarBotonesProfesion() {
+            const grid = document.getElementById("profGrid");
+            if (!grid) return;
+            grid.innerHTML = listaProfesiones.map(p => {
+                const bloqueado = !esAdmin && perfilFijo && (p !== perfilFijo);
+                const sel = (p === profesionActiva);
+                return `<div class="prof-btn ${sel ? 'selected' : ''} ${bloqueado ? 'locked' : ''}" onclick="intentarCambiarProfesion('${p}')">${bloqueado ? '🔒 ' : '✅ '}${p.split(" ")[0]}</div>`;
+            }).join('');
+            document.getElementById("lblModoUsuario").innerText = esAdmin ? `🔓 ADMIN MAESTRO (${nombreProfesional})` : `${nombreProfesional} — ${profesionActiva}`;
+            document.getElementById("badgeCandado").innerText = esAdmin ? "🔓 Admin Total" : "🔒 Rol Fijo";
+        }
+
+        function intentarCambiarProfesion(prof) {
+            if (!esAdmin && perfilFijo && prof !== perfilFijo) {
+                mostrarNotificacion(`🔒 Solo tiene autorizado el perfil de ${perfilFijo}`);
+                return;
+            }
+            profesionActiva = prof;
+            renderizarBotonesProfesion();
+            cargarProgramas();
+        }
+
+        function cargarProgramas() {
+            const disp = catalogoMaestro.filter(i => i.prof === profesionActiva || i.universal);
+            const progs = [...new Set(disp.map(i => i.prog))];
+            document.getElementById("countProg").innerText = progs.length;
+            let htmlOptions = `<option value="TODOS_PROG">📂 VER TODOS LOS PROGRAMAS DE ${profesionActiva.toUpperCase()} (${disp.length} paquetes)</option>`;
+            htmlOptions += progs.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById("selPrograma").innerHTML = htmlOptions;
+            cargarSubcategorias();
+        }
+
+        function cargarSubcategorias() {
+            const pr = document.getElementById("selPrograma").value;
+            const disp = catalogoMaestro.filter(i => (i.prof === profesionActiva || i.universal) && (pr === "TODOS_PROG" || i.prog === pr));
+            const subs = [...new Set(disp.map(i => i.sub))];
+            document.getElementById("countSub").innerText = subs.length;
+            let htmlSub = `<option value="TODAS_SUB">📋 VER TODAS LAS SUBCATEGORÍAS (${disp.length} paquetes)</option>`;
+            htmlSub += subs.map(s => `<option value="${s}">${s}</option>`).join('');
+            document.getElementById("selSubcategoria").innerHTML = htmlSub;
+            cargarPaquetesCascada();
+        }
+
+        function cargarPaquetesCascada() {
+            const pr = document.getElementById("selPrograma").value;
+            const sb = document.getElementById("selSubcategoria").value;
+            const filtrados = catalogoMaestro.filter(i =>
+                (i.prof === profesionActiva || i.universal) &&
+                (pr === "TODOS_PROG" || i.prog === pr) &&
+                (sb === "TODAS_SUB" || i.sub === sb)
+            );
+            document.getElementById("countPaq").innerText = filtrados.length;
+            document.getElementById("packageList").innerHTML = filtrados.map(p => `
+                <div class="package-item ${paqueteSeleccionado?.codigo === p.codigo ? 'selected' : ''}" onclick='seleccionarPaquetePorCodigo("${p.codigo}")'>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px;">
+                        <h4>${p.nombre}</h4>
+                        <span class="badge active">${p.lineas.length} líneas</span>
+                    </div>
+                    <p><b>${p.prog}</b> — ${p.sub}<br><span>Cód: <b>${p.codigo}</b></span></p>
+                </div>
+            `).join('');
+            if (filtrados.length > 0) seleccionarPaquetePorCodigo(filtrados[0].codigo);
+        }
+
+        function seleccionarPaquetePorCodigo(codPaq) {
+            const encontrado = catalogoMaestro.find(p => p.codigo === codPaq);
+            if (!encontrado) return;
+            paqueteSeleccionado = JSON.parse(JSON.stringify(encontrado));
+            document.querySelectorAll('.package-item').forEach(el => {
+                el.classList.toggle('selected', el.getAttribute('onclick')?.includes(codPaq));
+            });
+            renderizarTablaLineasHIS();
+        }
+
+        function renderizarTablaLineasHIS() {
+            const container = document.getElementById('hisCardsContainer');
+            if (!container || !paqueteSeleccionado) return;
+            document.getElementById('lblCountLineas').innerText = paqueteSeleccionado.lineas.length;
+            container.innerHTML = paqueteSeleccionado.lineas.map((l, i) => `
+                <div class="dx-card">
+                    <div class="dx-row-1">
+                        <div class="dx-num-badge">${i+1}</div>
+                        <input type="text" class="dx-desc-input" value="${l.desc}" onchange="paqueteSeleccionado.lineas[${i}].desc=this.value">
+                    </div>
+                    ${l.inst && l.inst !== 'NINGUNO' ? `<span class="inst-hint">💡 Guía LAB: ${l.inst}</span>` : ''}
+                    <div class="dx-row-2">
+                        <div class="dx-subcol">
+                            <label>TIPO DX</label>
+                            <select onchange="paqueteSeleccionado.lineas[${i}].dx=this.value">
+                                <option value="P" ${l.dx==='P'?'selected':''}>P</option>
+                                <option value="D" ${l.dx==='D'?'selected':''}>D</option>
+                                <option value="R" ${l.dx==='R'?'selected':''}>R</option>
+                            </select>
+                        </div>
+                        <div class="dx-subcol">
+                            <label>LAB 1°</label>
+                            <input type="text" value="${l.lab1||''}" onchange="paqueteSeleccionado.lineas[${i}].lab1=this.value.toUpperCase()">
+                        </div>
+                        <div class="dx-subcol">
+                            <label>LAB 2°</label>
+                            <input type="text" value="${l.lab2||''}" onchange="paqueteSeleccionado.lineas[${i}].lab2=this.value.toUpperCase()">
+                        </div>
+                        <div class="dx-subcol">
+                            <label>LAB 3°</label>
+                            <input type="text" value="${l.lab3||''}" onchange="paqueteSeleccionado.lineas[${i}].lab3=this.value.toUpperCase()">
+                        </div>
+                        <div class="dx-subcol">
+                            <label>CIE / CPT</label>
+                            <input type="text" class="cie-input" value="${l.cod}" onchange="paqueteSeleccionado.lineas[${i}].cod=this.value.toUpperCase()">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function agregarLineaExtra() {
+            if (!paqueteSeleccionado) return;
+            if (paqueteSeleccionado.lineas.length >= 16) {
+                mostrarNotificacion("Máximo 16 líneas por atención");
+                return;
+            }
+            paqueteSeleccionado.lineas.push({ desc: "Actividad / Diagnóstico adicional", cod: "", dx: "D", lab1: "", lab2: "", lab3: "", inst: "" });
+            renderizarTablaLineasHIS();
+        }
+
+        function finalizarAtencion() {
+            if (!paqueteSeleccionado) {
+                mostrarNotificacion("Seleccione un paquete antes de guardar");
+                return;
+            }
+            const dniPac = document.getElementById("txtDni").value.trim() || "S/D";
+            const nomPac = document.getElementById("txtNombresPac").value.trim() || "PACIENTE REGISTRADO";
+            const fNac = document.getElementById("txtFechaNac").value;
+            const sexoPac = document.getElementById("selSexo").value;
+            const edObj = obtenerObjetoEdadActual();
+            const hcPac = document.getElementById("txtHC").value.trim() || dniPac;
+            const financPac = document.getElementById("selFinanc").value;
+            const distPac = document.getElementById("txtDistrito").value.trim() || "CHILCA";
+            const cpPac = document.getElementById("txtCentroPob").value.trim() || "CHILCA";
+
+            const datosPaciente = {
+                dni: dniPac,
+                nombres: nomPac,
+                fechaNac: fNac,
+                sexo: sexoPac,
+                edadAnios: edObj.anios,
+                edadMeses: edObj.meses,
+                edadDias: edObj.dias,
+                hc: hcPac,
+                financ: financPac,
+                distrito: distPac,
+                centroPob: cpPac
+            };
+
+            if (dniPac.length === 8) {
+                padronPacientes[dniPac] = datosPaciente;
+                try {
+                    localStorage.setItem("aphis_padron_pacientes_real", JSON.stringify(padronPacientes));
+                } catch (e) {}
+                actualizarContadorPadron();
+                if (window.guardarPacienteEnFirestore) {
+                    window.guardarPacienteEnFirestore(dniPac, datosPaciente);
+                }
+            }
+
+            // REGISTRO COMPLETO CON FILIACIÓN (NO ANÓNIMO) PARA ESTADÍSTICAS
+            const reg = {
+                id_atencion: "HIS-" + Date.now() + "-" + Math.floor(Math.random()*1000),
+                timestamp: new Date().toISOString(),
+                fecha: new Date().toLocaleDateString('es-PE'),
+                turno: document.getElementById("hisTurno").value,
+                dia: document.getElementById("hisDia").value,
+                ipress: document.getElementById("hisIpress").value,
+                upss: document.getElementById("hisUpss").value,
+                dni_profesional: dniProfesionalActivo,
+                profesionalNom: nombreProfesional,
+                profesion: profesionActiva,
+                dni_paciente: dniPac,
+                historia_clinica: hcPac,
+                gestante_puerpera: document.getElementById("selGestante").value,
+                nombres_paciente: nomPac,
+                fecha_nac: fNac,
+                edad_valor: edObj.textoCompuesto,
+                edad_tipo: edObj.tipoPrincipal,
+                edad_anios: edObj.anios,
+                edad_meses: edObj.meses,
+                edad_dias: edObj.dias,
+                sexo: sexoPac,
+                financiador: financPac,
+                etnia: document.getElementById("txtEtnia").value,
+                distrito: distPac,
+                centro_poblado: cpPac,
+                peso: document.getElementById("txtPeso").value,
+                talla: document.getElementById("txtTalla").value,
+                hb: document.getElementById("txtHb").value,
+                pc: document.getElementById("txtPC").value,
+                pab: document.getElementById("txtPab").value,
+                fecha_ult_hb: document.getElementById("txtFechaHb").value,
+                fur: document.getElementById("txtFUR").value,
+                cond_estab: document.getElementById("selCondEstab").value,
+                cond_serv: document.getElementById("selCondServ").value,
+                programa: paqueteSeleccionado.prog,
+                subgrupo: paqueteSeleccionado.sub,
+                codigo_paquete: paqueteSeleccionado.codigo,
+                nombre_paquete: paqueteSeleccionado.nombre,
+                lineasCount: paqueteSeleccionado.lineas.length,
+                lineasDetalle: JSON.parse(JSON.stringify(paqueteSeleccionado.lineas))
+            };
+
+            atencionesLocal.push(reg);
+            try {
+                localStorage.setItem("atenciones_aphis_oficial", JSON.stringify(atencionesLocal));
+            } catch (e) {}
+
+            // Enviar a Firestore y a Google Sheets (Super Tabla Maestra)
+            if (window.enviarAFirebase) window.enviarAFirebase(reg);
+            const urlS = localStorage.getItem("aphis_url_sheets") || URL_SHEETS_PRECONFIGURADA;
+            if (urlS) {
+                fetch(urlS, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify(reg)
+                }).catch(() => {});
+            }
+
+            mostrarNotificacion(`✅ Atención #${atencionesLocal.length} guardada con filiación en Firestore y Padrón`);
+        }
+
+        // ==================== IMPRESIÓN HOJA HIS CON GUIONES DESPUÉS DE LÍNEA 3 ====================
+        function imprimirHojaHISOficial() {
+            if (atencionesLocal.length === 0) {
+                mostrarNotificacion("Guarde al menos 1 atención antes de imprimir");
+                return;
+            }
+            const hoy = new Date();
+            document.getElementById("prLote").innerHTML = "&nbsp;";
+            document.getElementById("prPagina").innerHTML = "1";
+            document.getElementById("prAnio").innerText = hoy.getFullYear();
+            document.getElementById("prMes").innerText = String(hoy.getMonth() + 1).padStart(2, '0');
+            document.getElementById("prIpress").innerText = document.getElementById("hisIpress").value;
+            document.getElementById("prUpss").innerText = document.getElementById("hisUpss").value;
+            document.getElementById("prDniResp").innerText = dniProfesionalActivo;
+            document.getElementById("prNomResp").innerText = nombreProfesional;
+
+            const tbody = document.getElementById("printBodyRows");
+            let numeroOrdenCasillero = 0;
+
+            tbody.innerHTML = atencionesLocal.map((at) => {
+                const lineas = at.lineasDetalle || [];
+                // Múltiplo de 3 filas para calzar con los bloques físicos de 3 líneas de la Hoja HIS MINSA
+                const nFilas = Math.ceil(Math.max(lineas.length, 3) / 3) * 3;
+                let htmlBloque = "";
+
+                for (let i = 0; i < nFilas; i++) {
+                    const ln = lineas[i] || { desc: "", cod: "", dx: "", lab1: "", lab2: "", lab3: "" };
+
+                    // Cada 3 líneas se abre un bloque físico en la Hoja HIS
+                    if (i % 3 === 0) {
+                        numeroOrdenCasillero++;
+                        if (i === 0) {
+                            // Primer bloque (líneas 1 a 3): Encabezado con nombres del paciente
+                            htmlBloque += `
+                                <tr>
+                                    <td colspan="19" style="text-align:left; background:#f2f2f2; font-weight:bold; padding:2px 6px;">
+                                        ${numeroOrdenCasillero} &nbsp; NOMBRES Y APELLIDOS PACIENTE: ${at.nombres_paciente} &nbsp;&nbsp;|&nbsp;&nbsp; (*)FECHA DE NACIMIENTO: ${at.fecha_nac || '___/___/____'} &nbsp;&nbsp;|&nbsp;&nbsp; FECHA ÚLTIMO RESULTADO DE Hb: ${at.fecha_ult_hb || '___/___/____'} &nbsp;&nbsp;|&nbsp;&nbsp; FECHA DE ÚLTIMA REGLA: ${at.fur || '___/___/____'}
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            // Bloques de continuación (líneas 4 en adelante): solo guiones para no repetir filiación
+                            htmlBloque += `
+                                <tr>
+                                    <td colspan="19" style="text-align:left; background:#fafafa; color:#444; font-weight:bold; padding:1.5px 6px;">
+                                        ${numeroOrdenCasillero} &nbsp; NOMBRES Y APELLIDOS PACIENTE: — (CONTINUACIÓN) —
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    }
+
+                    htmlBloque += `<tr>`;
+                    if (i === 0) {
+                        // Primeras 3 líneas: Datos completos de filiación
+                        htmlBloque += `
+                            <td rowspan="3"><b>${numeroOrdenCasillero}</b></td>
+                            <td rowspan="3">${at.dia}</td>
+                            <td rowspan="3"><b>${at.dni_paciente}</b><br>${at.historia_clinica}<br>${at.gestante_puerpera || ''}</td>
+                            <td rowspan="3">${at.financiador}<br>---<br>${at.etnia}</td>
+                            <td rowspan="3">${at.distrito}<br>---<br>${at.centro_poblado}</td>
+                            <td rowspan="3"><b>${at.edad_valor}</b></td>
+                            <td rowspan="3"><b>${at.sexo}</b></td>
+                            <td rowspan="3">PC:${at.pc||'-'}<br>Pab:${at.pab||'-'}</td>
+                            <td rowspan="3">P:${at.peso||'-'}<br>T:${at.talla||'-'}<br>Hb:${at.hb||'-'}</td>
+                            <td rowspan="3"><b>${at.cond_estab}</b></td>
+                            <td rowspan="3"><b>${at.cond_serv}</b></td>
+                        `;
+                    } else if (i % 3 === 0) {
+                        // A partir de la 4ta línea (i = 3, 6, 9, 12...): SOLO GUIONES (-) en filiación
+                        htmlBloque += `
+                            <td rowspan="3"><b>-</b></td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                            <td rowspan="3">-</td>
+                        `;
+                    }
+
+                    htmlBloque += `
+                        <td style="text-align:left;">${ln.desc ? `${i+1}. ${ln.desc}` : '&nbsp;'}</td>
+                        <td><b>${ln.dx==='P'?'X':''}</b></td>
+                        <td><b>${ln.dx==='D'?'X':''}</b></td>
+                        <td><b>${ln.dx==='R'?'X':''}</b></td>
+                        <td>${ln.lab1||''}</td>
+                        <td>${ln.lab2||''}</td>
+                        <td>${ln.lab3||''}</td>
+                        <td><b>${ln.cod||''}</b></td>
+                    </tr>`;
+                }
+                return htmlBloque;
+            }).join('');
+
+            window.print();
+        }
+
+        function abrirModalAdmin() {
+            if (esAdmin) {
+                esAdmin = false;
+                profesionActiva = perfilFijo || "Enfermería";
+                activarInterfazAdmin(false);
+                renderizarBotonesProfesion();
+                cargarProgramas();
+                mostrarNotificacion("🔒 Modo Administrador cerrado");
+                return;
+            }
+            document.getElementById("txtPinAdmin").value = "";
+            document.getElementById("adminModal").style.display = "flex";
+        }
+
+        function cerrarModalAdmin() {
+            document.getElementById("adminModal").style.display = "none";
+        }
+
+        function verificarPinAdmin() {
+            const pin = document.getElementById("txtPinAdmin").value.trim();
+            if (pin === claveMaestraActual) {
+                esAdmin = true;
+                cerrarModalAdmin();
+                activarInterfazAdmin(true);
+                renderizarBotonesProfesion();
+                renderConsolidado();
+                renderListaUsuariosAdmin();
+                mostrarNotificacion("🔓 Modo Administrador Total Activado");
+            } else {
+                mostrarNotificacion("❌ Clave Maestra incorrecta");
+            }
+        }
+
+        function activarInterfazAdmin(estado) {
+            document.getElementById("btnAdminToggle").classList.toggle("unlocked", estado);
+            document.getElementById("btnAdminToggle").innerText = estado ? "🔓 Admin Activo" : "🔒 Admin";
+            document.getElementById("urlSheets").disabled = !estado;
+            document.getElementById("btnSyncSeguridad").disabled = !estado;
+            document.getElementById("cfgNuevaClaveAdmin").disabled = !estado;
+            document.getElementById("formNuevoUsuarioAdmin").style.display = estado ? "block" : "none";
+            document.getElementById("badgeEstadoAdmin").innerText = estado ? "🔓 Edición Activa" : "Solo Admin";
+        }
+
+        async function sincronizarTodoDesdeNube() {
+            const url = document.getElementById("urlSheets").value.trim() || URL_SHEETS_PRECONFIGURADA;
+            try { localStorage.setItem("aphis_url_sheets", url); } catch (e) {}
+            mostrarNotificacion("🔄 Sincronizando con Firestore y Google Sheets...");
+            let totalPaq = 0;
+            if (window.cargarCatalogoDesdeFirestore) {
+                totalPaq = await window.cargarCatalogoDesdeFirestore();
+            }
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.clave_admin) {
+                    claveMaestraActual = String(data.clave_admin);
+                    localStorage.setItem("aphis_clave_maestra", claveMaestraActual);
+                }
+                if (Array.isArray(data.catalogo) && data.catalogo.length > 0) {
+                    window.actualizarCatalogoEnCaliente(data.catalogo);
+                    totalPaq = data.catalogo.length;
+                }
+                mostrarNotificacion(`✅ Sincronizado (${totalPaq || catalogoMaestro.length} paquetes activos)`);
+            } catch (e) {
+                mostrarNotificacion(`✅ Catálogo Firestore activo (${totalPaq || catalogoMaestro.length} paquetes)`);
+            }
+        }
+
+        async function descargarEstadisticasDeFirestore() {
+            if (!window.obtenerAtencionesDeFirestore) {
+                mostrarNotificacion("⚠️ Conectando con Firestore...");
+                return;
+            }
+            mostrarNotificacion("☁️ Descargando atenciones con filiación desde Firestore...");
+            const remotas = await window.obtenerAtencionesDeFirestore();
+            if (remotas.length === 0) {
+                mostrarNotificacion("ℹ️ Aún no hay atenciones en la colección de Firestore");
+                return;
+            }
+            const mapa = {};
+            atencionesLocal.forEach(a => { mapa[a.id_atencion || (a.dni_paciente + "_" + a.nombre_paquete)] = a; });
+            remotas.forEach(r => { mapa[r.id_atencion || (r.dni_paciente + "_" + r.nombre_paquete)] = r; });
+            atencionesLocal = Object.values(mapa);
+            try {
+                localStorage.setItem("atenciones_aphis_oficial", JSON.stringify(atencionesLocal));
+            } catch (e) {}
+            renderConsolidado();
+            mostrarNotificacion(`✅ ${atencionesLocal.length} atenciones con filiación cargadas`);
+        }
+
+        function renderListaUsuariosAdmin() {
+            const cont = document.getElementById("listaUsuariosAutorizados");
+            if (!cont) return;
+            cont.innerHTML = usuariosAutorizados.map((u, idx) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--input-bg); border-radius:10px; margin-bottom:6px;">
+                    <div>
+                        <b>${u.nombre}</b> (DNI: ${u.dni})<br>
+                        <span style="color:var(--text-secondary); font-size:12.5px;">Profesión: ${u.prof} — Estado: <b>${u.estado}</b></span>
+                    </div>
+                    ${esAdmin && u.rol !== 'ADMIN' ? `<button onclick="alternarEstadoUsuario(${idx})" class="secondary" style="width:auto; padding:6px 12px; font-size:12px;">${u.estado==='ACTIVO'?'Bloquear':'Activar'}</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function agregarUsuarioAutorizado() {
+            const dni = document.getElementById("nuevoUserDni").value.trim();
+            const pin = document.getElementById("nuevoUserPin").value.trim();
+            const nom = document.getElementById("nuevoUserNombre").value.trim();
+            const prof = document.getElementById("nuevoUserProf").value;
+            if (dni.length !== 8 || !pin || !nom) {
+                mostrarNotificacion("Complete DNI (8 dígitos), PIN y Nombre");
+                return;
+            }
+            usuariosAutorizados.push({ dni, pin, nombre: nom, prof, estado: "ACTIVO", rol: "USER" });
+            try { localStorage.setItem("aphis_usuarios_whitelist", JSON.stringify(usuariosAutorizados)); } catch (e) {}
+            renderListaUsuariosAdmin();
+            mostrarNotificacion(`✅ Usuario ${nom} autorizado`);
+        }
+
+        function alternarEstadoUsuario(idx) {
+            usuariosAutorizados[idx].estado = usuariosAutorizados[idx].estado === "ACTIVO" ? "BLOQUEADO" : "ACTIVO";
+            try { localStorage.setItem("aphis_usuarios_whitelist", JSON.stringify(usuariosAutorizados)); } catch (e) {}
+            renderListaUsuariosAdmin();
+            mostrarNotificacion("Estado actualizado");
+        }
+
+        function guardarConfigDispositivo() {
+            if (esAdmin) {
+                const nuevaClave = document.getElementById("cfgNuevaClaveAdmin").value.trim();
+                if (nuevaClave) {
+                    claveMaestraActual = nuevaClave;
+                    try { localStorage.setItem("aphis_clave_maestra", nuevaClave); } catch (e) {}
+                }
+            }
+            mostrarNotificacion("✅ Configuración guardada");
+        }
+
+        function renderConsolidado() {
+            const filtroProf = document.getElementById("filtroProfEstadistica").value;
+            const crit = document.getElementById("filtroAgrupacion").value;
+            let lista = atencionesLocal;
+            if (!esAdmin && perfilFijo) lista = lista.filter(a => a.profesion === perfilFijo);
+            else if (filtroProf !== "TODOS") lista = lista.filter(a => a.profesion === filtroProf);
+
+            const conteo = {};
+            lista.forEach(i => {
+                let k = i[crit] || "Otros";
+                if (crit === "dni_paciente") {
+                    k = `${i.dni_paciente || 'S/D'} - ${i.nombres_paciente || 'Paciente'}`;
+                }
+                conteo[k] = (conteo[k] || 0) + 1;
+            });
+            const divG = document.getElementById("graficoBarras");
+            const claves = Object.keys(conteo);
+            divG.innerHTML = claves.length === 0
+                ? "Sin atenciones registradas en esta vista."
+                : claves.map(k => `<div style="margin-bottom:4px;"><b>${k}:</b> ${conteo[k]} atenciones</div>`).join('');
+
+            const cont = document.getElementById("listaConsolidado");
+            cont.innerHTML = lista.map((a, i) => `
+                <div style="background:var(--input-bg); padding:12px; border-radius:12px; margin-bottom:8px;">
+                    <b>#${i+1} | Día ${a.dia} | DNI: ${a.dni_paciente} (HC: ${a.historia_clinica || a.dni_paciente}) — ${a.nombres_paciente}</b><br>
+                    <span>F.Nac: ${a.fecha_nac || '-'} | Edad: <b>${a.edad_valor}</b> | Sexo: <b>${a.sexo}</b> | Financ: ${a.financiador} | Dist: ${a.distrito}</span><br>
+                    <span>Paquete: <b>${a.nombre_paquete}</b> (${a.lineasCount} líneas) | Prof: ${a.profesionalNom} (${a.profesion})</span>
+                </div>
+            `).join('');
+        }
+
+        function limpiarHojaDelDia() {
+            atencionesLocal = [];
+            try { localStorage.setItem("atenciones_aphis_oficial", "[]"); } catch (e) {}
+            renderConsolidado();
+            mostrarNotificacion("Hoja local del turno limpiada");
+        }
+
+        function exportarCSV() {
+            if (atencionesLocal.length === 0) { mostrarNotificacion("Sin registros para exportar"); return; }
+            let csv = "ID_Atencion,Fecha,Turno,Dia,IPRESS,UPSS,DNI_Profesional,Nombre_Profesional,Profesion,DNI_Paciente,Historia_Clinica,Gestante_Puerpera,Nombres_Apellidos_Paciente,Fecha_Nacimiento,Edad_HIS,Edad_Anios,Edad_Meses,Edad_Dias,Sexo,Financiador,Etnia,Distrito,Centro_Poblado,Peso_kg,Talla_cm,Hemoglobina,PC_cm,Pab_cm,Fecha_Ult_Hb,FUR,Cond_Estab,Cond_Serv,Programa,Subgrupo,Codigo_Paquete,Nombre_Paquete,Total_Lineas,Detalle_CIE_CPT_LAB\n";
+            atencionesLocal.forEach(a => {
+                const det = (a.lineasDetalle || []).map((l, idx) => `${idx+1}:${l.cod}(${l.dx})[${l.lab1||''}/${l.lab2||''}/${l.lab3||''}]-${l.desc}`).join(" | ");
+                csv += `"${a.id_atencion||''}","${a.fecha||''}","${a.turno||''}","${a.dia||''}","${a.ipress||''}","${a.upss||''}","${a.dni_profesional||''}","${a.profesionalNom||''}","${a.profesion||''}","${a.dni_paciente||''}","${a.historia_clinica||''}","${a.gestante_puerpera||''}","${a.nombres_paciente||''}","${a.fecha_nac||''}","${a.edad_valor||''}","${a.edad_anios||0}","${a.edad_meses||0}","${a.edad_dias||0}","${a.sexo||''}","${a.financiador||''}","${a.etnia||''}","${a.distrito||''}","${a.centro_poblado||''}","${a.peso||''}","${a.talla||''}","${a.hb||''}","${a.pc||''}","${a.pab||''}","${a.fecha_ult_hb||''}","${a.fur||''}","${a.cond_estab||''}","${a.cond_serv||''}","${a.programa||''}","${a.subgrupo||''}","${a.codigo_paquete||''}","${a.nombre_paquete||''}",${a.lineasCount||0},"${det.replace(/"/g, '""')}"\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Consolidado_HIS_Con_Filiacion_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function exportarPadronCSV() {
+            const dnis = Object.keys(padronPacientes);
+            if (dnis.length === 0) { mostrarNotificacion("Sin pacientes en el Padrón"); return; }
+            let csv = "DNI,Historia_Clinica,Nombres_Apellidos,Fecha_Nacimiento,Sexo,Edad_Anios,Edad_Meses,Edad_Dias,Financiador,Distrito,Centro_Poblado\n";
+            dnis.forEach(dni => {
+                const p = padronPacientes[dni];
+                csv += `"${dni}","${p.hc||dni}","${p.nombres||''}","${p.fechaNac||''}","${p.sexo||''}","${p.edadAnios||0}","${p.edadMeses||0}","${p.edadDias||0}","${p.financ||'2'}","${p.distrito||'CHILCA'}","${p.centroPob||'CHILCA'}"\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const linkElem = document.createElement("a");
+            linkElem.href = URL.createObjectURL(blob);
+            linkElem.download = `Padron_Pacientes_${new Date().toISOString().slice(0,10)}.csv`;
+            linkElem.click();
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btn.classList.add('active');
+            if (tabId === 'consolidado') renderConsolidado();
+            if (tabId === 'config') renderListaUsuariosAdmin();
+        }
+
+        window.onload = inicializarApp;
+    </script>
+</body>
+</html>

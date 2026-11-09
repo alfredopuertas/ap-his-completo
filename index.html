@@ -964,6 +964,18 @@
                 return null;
             };
 
+            window.guardarCatalogoEnFirestore = async (paquetes) => {
+                if (!Array.isArray(paquetes) || paquetes.length === 0) return;
+                try {
+                    await setDoc(doc(db, "configuracion", "catalogo_web"), {
+                        version: "6.2-live-sheet",
+                        total_paquetes: paquetes.length,
+                        actualizado: serverTimestamp(),
+                        paquetes: paquetes
+                    }, { merge: true });
+                } catch (e) {}
+            };
+
             window.cargarCatalogoDesdeFirestore = async () => {
                 try {
                     const snap = await getDoc(doc(db, "configuracion", "catalogo_web"));
@@ -986,16 +998,190 @@
                 }
             };
 
-            setTimeout(() => {
-                window.cargarCatalogoDesdeFirestore();
-            }, 600);
+            setTimeout(async () => {
+                // 1. Intentar leer EN VIVO directamente desde Super_Tabla_Maestra (Google Sheets)
+                const leidoDeSheet = await window.cargarDirectoDesdeSuperTablaMaestra();
+                // 2. Si la hoja aún está privada, usar Firestore como respaldo inmediato
+                if (!leidoDeSheet) {
+                    await window.cargarCatalogoDesdeFirestore();
+                }
+            }, 400);
         } catch (err) {
             console.error("Error inicializando Firebase:", err);
         }
     </script>
 
     <script>
+        const ID_SUPER_TABLA_MAESTRA = "1lni-Vovgf5p6oeTUpugLPtmxWBS6wjGCBdkZNKxTFvY";
         const URL_SHEETS_PRECONFIGURADA = "https://script.google.com/macros/s/AKfycbx6w--PW_iWAB4HQYm4FSnqBW77t8nWXuYcq0wF1A84yZQ8BVlfqIUHli9DP3yUrkvp/exec";
+
+        // Parser CSV ligero en navegador para leer Super_Tabla_Maestra en tiempo real
+        function parsearCSVTexto(texto) {
+            const filas = [];
+            let filaActual = [];
+            let celda = "";
+            let enComillas = false;
+            for (let i = 0; i < texto.length; i++) {
+                const c = texto[i];
+                const sig = texto[i + 1];
+                if (enComillas) {
+                    if (c === '"' && sig === '"') { celda += '"'; i++; }
+                    else if (c === '"') { enComillas = false; }
+                    else { celda += c; }
+                } else {
+                    if (c === '"') { enComillas = true; }
+                    else if (c === ',') { filaActual.push(celda.trim()); celda = ""; }
+                    else if (c === '\n' || (c === '\r' && sig === '\n')) {
+                        if (c === '\r') i++;
+                        filaActual.push(celda.trim());
+                        filas.push(filaActual);
+                        filaActual = [];
+                        celda = "";
+                    } else if (c !== '\r') {
+                        celda += c;
+                    }
+                }
+            }
+            if (celda.length > 0 || filaActual.length > 0) {
+                filaActual.push(celda.trim());
+                filas.push(filaActual);
+            }
+            return filas;
+        }
+
+        function inferirObligatoriosAutoJS(prof, cat, sub, nom, lineas) {
+            const req = [];
+            const txt = `${prof} ${cat} ${sub} ${nom}`.toUpperCase();
+            const cods = lineas.map(l => `${l.cod} ${l.desc}`).join(" ").toUpperCase();
+            if (cat.toUpperCase().includes("CRED")) {
+                req.push("PESO", "TALLA");
+                if (/PREMATURO|RECI[EÉ]N NACIDO|MENOR DE 6|6M A 11M|1 AÑO|2 AÑOS/.test(txt)) req.push("PC");
+            }
+            if (/85018|HEMOGLOBINA|DOSAJE DE HB|ANEMIA/.test(cods) || txt.includes("ANEMIA")) {
+                ["PESO", "TALLA", "HB", "FHB"].forEach(k => { if (!req.includes(k)) req.push(k); });
+            }
+            if (/GESTANTE|CUELLO UTERINO|PAP|OBSTETRICIA/.test(txt)) {
+                if (txt.includes("GESTANTE")) {
+                    ["PESO", "TALLA", "HB", "FHB", "FUR"].forEach(k => { if (!req.includes(k)) req.push(k); });
+                } else if (!req.includes("FUR")) {
+                    req.push("FUR");
+                }
+            }
+            if (cat.toUpperCase().includes("NO TRANSMISIBLES") || /HIPERTENSI[OÓ]N|DIABETES|METAB[OÓ]LICO/.test(txt)) {
+                ["PESO", "TALLA", "PAB"].forEach(k => { if (!req.includes(k)) req.push(k); });
+            }
+            return req;
+        }
+
+        // Lector automático en tiempo real desde Super_Tabla_Maestra (sin depender de Python)
+        window.cargarDirectoDesdeSuperTablaMaestra = async function() {
+            const urlCatalogoCSV = `https://docs.google.com/spreadsheets/d/${ID_SUPER_TABLA_MAESTRA}/gviz/tq?tqx=out:csv&sheet=1_Catalogo_Maestro_HIS&t=${Date.now()}`;
+            try {
+                const resp = await fetch(urlCatalogoCSV, { cache: "no-store" });
+                if (!resp.ok) return false;
+                const csvText = await resp.text();
+                if (!csvText || csvText.includes("<!DOCTYPE html>")) return false;
+
+                const filas = parsearCSVTexto(csvText);
+                if (filas.length < 2) return false;
+
+                const cabeceras = filas[0].map(h => h.toLowerCase().trim());
+                const idxProf = cabeceras.indexOf("profesional");
+                const idxCat = cabeceras.indexOf("categoria");
+                const idxSub = cabeceras.indexOf("subgrupo");
+                const idxNom = cabeceras.indexOf("nombre_paquete");
+                const idxOrd = cabeceras.indexOf("orden_linea");
+                const idxDesc = cabeceras.indexOf("descripcion_item");
+                const idxDx = cabeceras.indexOf("tipo_dx");
+                const idxLab = cabeceras.indexOf("lab");
+                const idxCod = cabeceras.indexOf("codigo_cie_cpt");
+                const idxInst = cabeceras.indexOf("instruccion_linea");
+                const idxOblig = cabeceras.indexOf("campos_obligatorios");
+
+                if (idxProf === -1 || idxDesc === -1) return false;
+
+                const paquetesNuevos = [];
+                let claveAnt = null;
+                let paqAct = null;
+                let contador = 0;
+
+                for (let i = 1; i < filas.length; i++) {
+                    const r = filas[i];
+                    const prof = (r[idxProf] || "").trim();
+                    const cat = (r[idxCat] || "").trim();
+                    const sub = (r[idxSub] || "").trim();
+                    const nom = (r[idxNom] || "").trim();
+                    const ordStr = (r[idxOrd] || "").trim();
+                    const desc = (r[idxDesc] || "").trim();
+                    let dx = ((r[idxDx] || "D").trim().toUpperCase().split("/")[0] || "D").trim();
+                    const lab = (r[idxLab] || "").trim();
+                    const cod = (r[idxCod] || "").trim();
+                    const inst = idxInst >= 0 ? (r[idxInst] || "").trim() : "";
+                    const obligStr = idxOblig >= 0 ? (r[idxOblig] || "").trim().toUpperCase() : "";
+
+                    if (!prof && !cat && !sub && !nom && !desc && !cod) continue;
+
+                    const orden = parseInt(ordStr, 10) || 0;
+                    const clave = `${prof}|${cat}|${sub}|${nom}`;
+                    const nuevo = (!paqAct || clave !== claveAnt || (orden === 1 && paqAct.lineas.length > 0));
+
+                    if (nuevo) {
+                        contador++;
+                        claveAnt = clave;
+                        paqAct = {
+                            codigo: `PAQ-${String(contador).padStart(3, "0")}`,
+                            prof: prof,
+                            universal: false,
+                            prog: cat,
+                            sub: sub || cat,
+                            sec: `Paquete #${contador}`,
+                            nombre: nom || sub || cat,
+                            oblig_raw: obligStr,
+                            obligatorios: [],
+                            lineas: []
+                        };
+                        paquetesNuevos.push(paqAct);
+                    } else if (obligStr && !paqAct.oblig_raw) {
+                        paqAct.oblig_raw = obligStr;
+                    }
+
+                    paqAct.lineas.push({
+                        orden: orden > 0 ? orden : (paqAct.lineas.length + 1),
+                        desc: desc,
+                        dx: ["P", "D", "R"].includes(dx) ? dx : "D",
+                        lab1: lab,
+                        lab2: "",
+                        lab3: "",
+                        cod: cod,
+                        inst: inst
+                    });
+                }
+
+                paquetesNuevos.forEach(p => {
+                    const raw = p.oblig_raw || "";
+                    delete p.oblig_raw;
+                    if (!raw) {
+                        p.obligatorios = inferirObligatoriosAutoJS(p.prof, p.prog, p.sub, p.nombre, p.lineas);
+                    } else if (["NINGUNO", "NO", "-"].includes(raw)) {
+                        p.obligatorios = [];
+                    } else {
+                        p.obligatorios = raw.split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
+                    }
+                });
+
+                if (paquetesNuevos.length > 0) {
+                    window.actualizarCatalogoEnCaliente(paquetesNuevos);
+                    if (window.guardarCatalogoEnFirestore) {
+                        window.guardarCatalogoEnFirestore(paquetesNuevos);
+                    }
+                    try {
+                        localStorage.setItem("aphis_catalogo_cache_sheet", JSON.stringify(paquetesNuevos));
+                    } catch (e) {}
+                    return paquetesNuevos.length;
+                }
+            } catch (e) {}
+            return false;
+        };
         try {
             localStorage.setItem("aphis_url_sheets", URL_SHEETS_PRECONFIGURADA);
         } catch (e) {}
@@ -2005,9 +2191,12 @@
         async function sincronizarTodoDesdeNube() {
             const url = document.getElementById("urlSheets").value.trim() || URL_SHEETS_PRECONFIGURADA;
             try { localStorage.setItem("aphis_url_sheets", url); } catch (e) {}
-            mostrarNotificacion("🔄 Sincronizando con Firestore y Google Sheets...");
+            mostrarNotificacion("🔄 Leyendo Super_Tabla_Maestra en tiempo real...");
             let totalPaq = 0;
-            if (window.cargarCatalogoDesdeFirestore) {
+            if (window.cargarDirectoDesdeSuperTablaMaestra) {
+                totalPaq = await window.cargarDirectoDesdeSuperTablaMaestra();
+            }
+            if (!totalPaq && window.cargarCatalogoDesdeFirestore) {
                 totalPaq = await window.cargarCatalogoDesdeFirestore();
             }
             try {
@@ -2017,13 +2206,13 @@
                     claveMaestraActual = String(data.clave_admin);
                     localStorage.setItem("aphis_clave_maestra", claveMaestraActual);
                 }
-                if (Array.isArray(data.catalogo) && data.catalogo.length > 0) {
+                if (Array.isArray(data.catalogo) && data.catalogo.length > 0 && !totalPaq) {
                     window.actualizarCatalogoEnCaliente(data.catalogo);
                     totalPaq = data.catalogo.length;
                 }
-                mostrarNotificacion(`✅ Sincronizado (${totalPaq || catalogoMaestro.length} paquetes activos)`, "success");
+                mostrarNotificacion(`✅ Sincronizado en vivo (${totalPaq || catalogoMaestro.length} paquetes activos)`, "success");
             } catch (e) {
-                mostrarNotificacion(`✅ Catálogo Firestore activo (${totalPaq || catalogoMaestro.length} paquetes)`, "success");
+                mostrarNotificacion(`✅ Catálogo activo (${totalPaq || catalogoMaestro.length} paquetes)`, "success");
             }
         }
 

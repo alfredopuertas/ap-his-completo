@@ -1,4 +1,4 @@
-// Catálogo Oficial Importado Íntegramente desde AP_HIS (67 Paquetes Validados / 289 Líneas)
+// Catálogo Oficial Sincronizado desde Super_Tabla_Maestra (AP_HIS) con Campos Obligatorios
 window.CATALOGO_PAQUETES_OFICIAL = [
   {
     "codigo": "PAQ-001",
@@ -8,6 +8,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Hipertensión Arterial (4 Líneas)",
     "sec": "Paquete #1",
     "nombre": "Hipertensión Arterial (4 Líneas)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PAB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -59,6 +64,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Diabetes Mellitus 2 (5 Líneas)",
     "sec": "Paquete #2",
     "nombre": "Diabetes Mellitus 2 (5 Líneas)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PAB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -120,6 +130,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Síndrome Metabólico (3 Líneas)",
     "sec": "Paquete #3",
     "nombre": "Síndrome Metabólico (3 Líneas)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PAB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -161,6 +176,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tamizaje Cáncer de Próstata (65 años)",
     "sec": "Paquete #4",
     "nombre": "Tamizaje Cáncer de Próstata (65 años)",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -192,6 +208,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tamizaje Cáncer de Colon y Recto",
     "sec": "Paquete #5",
     "nombre": "Tamizaje Cáncer de Colon y Recto",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -223,6 +240,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tamizaje de Cáncer de Piel",
     "sec": "Paquete #6",
     "nombre": "Tamizaje de Cáncer de Piel",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -254,6 +272,9 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tamizaje Cáncer de Cuello Uterino (PAP)",
     "sec": "Paquete #7",
     "nombre": "Tamizaje Cáncer de Cuello Uterino (PAP)",
+    "obligatorios": [
+      "FUR"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -285,6 +306,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Rabia",
     "sec": "Paquete #8",
     "nombre": "Rabia",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -336,6 +358,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Dengue",
     "sec": "Paquete #9",
     "nombre": "Dengue-Caso Sospechoso",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -357,6 +380,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Dengue",
     "sec": "Paquete #10",
     "nombre": "Dengue-Caso Confirmado",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -378,6 +402,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Anemia-Gestante",
     "sec": "Paquete #11",
     "nombre": "Anemia-Gestante",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB",
+      "FUR"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -439,6 +470,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tratamiento de Anemia",
     "sec": "Paquete #12",
     "nombre": "Inicio Tto. Anemia - Niño 6 meses",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -480,6 +517,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tratamiento de Anemia",
     "sec": "Paquete #13",
     "nombre": "Continua Tto. Anemia -Niño 6m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -511,6 +554,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Tratamiento de Anemia",
     "sec": "Paquete #14",
     "nombre": "Termina Tto. Anemia - Niño 6m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -552,6 +601,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "IRA / EDA",
     "sec": "Paquete #15",
     "nombre": "IRA o EDA-Consejeria Lavado de Manos",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -573,6 +623,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "IRA / EDA",
     "sec": "Paquete #16",
     "nombre": "IRA o EDA: Consejería",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -594,6 +645,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Dengue",
     "sec": "Paquete #17",
     "nombre": "Dengue 1ra. visita (son 2 visitas)",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -645,6 +697,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Dengue",
     "sec": "Paquete #18",
     "nombre": "Dengue 2da. visita (a los 7 dias)",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -696,6 +749,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Familia Saludable",
     "sec": "Paquete #19",
     "nombre": "Fam Saludable 1ra Sesion. (Son 3 sesiones)",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -727,6 +781,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Familia Saludable",
     "sec": "Paquete #20",
     "nombre": "Fam Saludable. 2da sesion al mes (2/3)",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -758,6 +813,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Familia Saludable",
     "sec": "Paquete #21",
     "nombre": "Fam Saludable. 3ra sesion al mes (3/3)",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -789,6 +845,7 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Fam Saludable - Cancer (TA: Tabaco, AD: Alcohol, HA:Piel, SSI (Salud Sexual).",
     "sec": "Paquete #22",
     "nombre": "Fam Saludable - Cancer (TA: Tabaco, AD: Alcohol, HA:Piel, SSI (Salud Sexual).",
+    "obligatorios": [],
     "lineas": [
       {
         "orden": 1,
@@ -820,6 +877,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niños con Anemia Consejeria y Visita Dom",
     "sec": "Paquete #23",
     "nombre": "Niños con Anemia Consejeria y Visita Dom",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -871,6 +934,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Prematuro / Bajo Peso",
     "sec": "Paquete #24",
     "nombre": "Prematuro o Bajo Peso - 1er control de 4 controles (1er.-2do.-3er.-4to mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1002,6 +1072,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Prematuro / Bajo Peso",
     "sec": "Paquete #25",
     "nombre": "Prematuro o Bajo Peso 2do. control de 4 controles (1er.-2do.-3er.-4to mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1063,6 +1138,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Prematuro / Bajo Peso",
     "sec": "Paquete #26",
     "nombre": "Prematuro o Bajo Peso 3er. control de 4 controles (1er.-2do.-3er.-4to mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1124,6 +1206,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Recién Nacido (RN)",
     "sec": "Paquete #27",
     "nombre": "Recien Nacido- Atc Inmediata",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1195,6 +1282,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Recién Nacido (RN)",
     "sec": "Paquete #28",
     "nombre": "Recien Nacido 3-6 dia",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1276,6 +1368,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Recién Nacido (RN)",
     "sec": "Paquete #29",
     "nombre": "Recien Nacido 7-14 dias",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1337,6 +1434,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Recién Nacido (RN)",
     "sec": "Paquete #30",
     "nombre": "Recien Nacido 15-21 dias",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1398,6 +1500,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Menor de 6 Meses",
     "sec": "Paquete #31",
     "nombre": "Niño menor de 6 meses 1er Control (5 controles)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1489,6 +1596,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Menor de 6 Meses",
     "sec": "Paquete #32",
     "nombre": "Niño menor de 6 meses 2do Control (5 controles)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1540,6 +1652,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Menor de 6 Meses",
     "sec": "Paquete #33",
     "nombre": "Niño menor de 6 meses 3er Control (5 controles)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1591,6 +1708,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Menor de 6 Meses",
     "sec": "Paquete #34",
     "nombre": "Niño menor de 6 meses 4to Control (5 controles)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1652,6 +1774,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Menor de 6 Meses",
     "sec": "Paquete #35",
     "nombre": "Niño menor de 6 meses 5to Control (5 controles)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1683,6 +1810,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 6m a 11m. 5 controles",
     "sec": "Paquete #36",
     "nombre": "Niño de 6m a 11m - 1/5 controles (Cada mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1784,6 +1918,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 6m a 11m. 5 controles",
     "sec": "Paquete #37",
     "nombre": "Niño de 6m a 11m - 2/5 controles (Cada mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1835,6 +1974,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 6m a 11m. 5 controles",
     "sec": "Paquete #38",
     "nombre": "Niño de 6m a 11m - 3/5 controles (Cada mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1866,6 +2010,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 6m a 11m. 5 controles",
     "sec": "Paquete #39",
     "nombre": "Niño de 6m a 11m - 4/5 controles (Cada mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1927,6 +2078,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 6m a 11m. 5 controles",
     "sec": "Paquete #40",
     "nombre": "Niño de 6m a 11m - 5/5 controles (Cada mes)",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -1968,6 +2124,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 1 año (6 controles)",
     "sec": "Paquete #41",
     "nombre": "Niño de 1 año - 1/6 controles. 1a",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2099,6 +2262,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 1 año (6 controles)",
     "sec": "Paquete #42",
     "nombre": "Niño de 1 año - 2/6 controles. 1a3m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2170,6 +2340,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 1 año (6 controles)",
     "sec": "Paquete #43",
     "nombre": "Niño de 1 año - 3/6 controles. 1a5m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2201,6 +2376,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 1 año (6 controles)",
     "sec": "Paquete #44",
     "nombre": "Niño de 1 año - 4/6 controles. 1a6m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2262,6 +2444,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 1 año (6 controles)",
     "sec": "Paquete #45",
     "nombre": "Niño de 1 año - 5/6 controles. 1a7m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2293,6 +2480,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 1 año (6 controles)",
     "sec": "Paquete #46",
     "nombre": "Niño de 1 año - 6/6 controles. 1a9m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2374,6 +2568,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #47",
     "nombre": "Niño de 2 años",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2515,6 +2716,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #48",
     "nombre": "Niño de 2 años 1m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2556,6 +2762,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #49",
     "nombre": "Niño de 2 años 2m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2587,6 +2798,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #50",
     "nombre": "Niño de 2 años 3m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2618,6 +2834,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #51",
     "nombre": "Niño de 2 años 4m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2649,6 +2870,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #52",
     "nombre": "Niño de 2 años 5m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2680,6 +2906,11 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #53",
     "nombre": "Niño de 2 años 6m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2741,6 +2972,13 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 2 años",
     "sec": "Paquete #54",
     "nombre": "Niño de 2 años 7m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "PC",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2792,6 +3030,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 3 años",
     "sec": "Paquete #55",
     "nombre": "Niño de 3 años",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2933,6 +3177,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 3 años",
     "sec": "Paquete #56",
     "nombre": "Niño de 3 años 1m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -2974,6 +3222,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 3 años",
     "sec": "Paquete #57",
     "nombre": "Niño de 3 años 2m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3005,6 +3257,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 3 años",
     "sec": "Paquete #58",
     "nombre": "Niño de 3 años 3m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3046,6 +3304,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 3 años",
     "sec": "Paquete #59",
     "nombre": "Niño de 3 años 6m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3117,6 +3379,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 4 años",
     "sec": "Paquete #60",
     "nombre": "Niño de 4 años",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3258,6 +3526,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 4 años",
     "sec": "Paquete #61",
     "nombre": "Niño de 4 años 1m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3299,6 +3571,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 4 años",
     "sec": "Paquete #62",
     "nombre": "Niño de 4 años 2m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3330,6 +3606,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 4 años",
     "sec": "Paquete #63",
     "nombre": "Niño de 4 años 3m",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3371,6 +3653,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 4 años",
     "sec": "Paquete #64",
     "nombre": "Niño de 4 años 6m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3442,6 +3728,12 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 5 años",
     "sec": "Paquete #65",
     "nombre": "Niño de 5 años",
+    "obligatorios": [
+      "PESO",
+      "TALLA",
+      "HB",
+      "FHB"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3543,6 +3835,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 5 años",
     "sec": "Paquete #66",
     "nombre": "Niño de 5 años 1m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,
@@ -3584,6 +3880,10 @@ window.CATALOGO_PAQUETES_OFICIAL = [
     "sub": "Niño de 5 años",
     "sec": "Paquete #67",
     "nombre": "Niño de 5 años 2m",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
     "lineas": [
       {
         "orden": 1,

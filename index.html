@@ -87,7 +87,7 @@
 
         #iosToast {
             position: fixed;
-            top: -120px;
+            top: -140px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(28, 28, 30, 0.96);
@@ -103,6 +103,39 @@
             text-align: center;
         }
         #iosToast.show { top: 18px; }
+        #iosToast.toast-error { background: rgba(215, 0, 21, 0.96); }
+        #iosToast.toast-success { background: rgba(24, 138, 56, 0.96); }
+
+        #bannerNuevoPaciente {
+            display: none;
+            background: linear-gradient(135deg, #E8F8EE, #D4F4E2);
+            border: 2px solid #34C759;
+            color: #0F5132;
+            padding: 14px 18px;
+            border-radius: 16px;
+            margin-bottom: 14px;
+            font-weight: 800;
+            font-size: 16px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(52, 199, 89, 0.18);
+            animation: fadeIn 0.3s ease;
+        }
+        #alertaCamposFaltantes {
+            display: none;
+            background: #FFF2F4;
+            border: 2px solid var(--danger);
+            color: #A8001A;
+            padding: 14px 16px;
+            border-radius: 16px;
+            margin-bottom: 14px;
+            font-weight: 700;
+            font-size: 14.5px;
+            line-height: 1.4;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .container {
             padding: 14px;
@@ -128,6 +161,8 @@
             color: var(--text-main);
             border-bottom: 2px solid var(--bg-apple);
             padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .badge {
             background: var(--input-bg);
@@ -141,9 +176,15 @@
             background: var(--primary-soft);
             color: var(--primary);
         }
-        .badge.universal {
-            background: #E8F8EE;
-            color: #1D8348;
+        .badge.req-badge {
+            background: #FFF3CD;
+            color: #995400;
+            border: 1px solid #FFECB5;
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 8px;
+            margin-left: 4px;
+            vertical-align: middle;
         }
 
         label.field-label {
@@ -165,7 +206,7 @@
             font-weight: 600;
             margin-bottom: 14px;
             color: var(--text-main);
-            transition: border-color 0.2s, background 0.2s;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
         select:focus, input:focus {
             outline: none;
@@ -173,6 +214,16 @@
             background: #FFFFFF;
             box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
         }
+        .campo-obligatorio-activo {
+            border-color: #FF9500 !important;
+            background: #FFFDF7 !important;
+        }
+        .campo-faltante {
+            border: 2.5px solid var(--danger) !important;
+            background: #FFF5F6 !important;
+            box-shadow: 0 0 0 4px rgba(255, 45, 85, 0.18) !important;
+        }
+
         button {
             background: var(--primary);
             color: white;
@@ -355,6 +406,15 @@
             margin-top: 6px;
         }
 
+        .cond-box {
+            background: #F4F6FA;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 2000; justify-content: center; align-items: center; padding: 16px; }
         .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 22px; padding: 24px; text-align: center; max-height: 92vh; overflow-y: auto; }
         video#cameraPreview { width: 100%; height: 220px; background: #000; border-radius: 14px; object-fit: cover; margin-bottom: 12px; border: 2px solid var(--primary); }
@@ -419,6 +479,10 @@
 
         <div id="tab-atencion" class="tab-content active">
 
+            <!-- BANNER DE NUEVO PACIENTE Y ALERTA DE CAMPOS FALTANTES -->
+            <div id="bannerNuevoPaciente">👤 Ingresar nuevo paciente (Atención anterior guardada con éxito)</div>
+            <div id="alertaCamposFaltantes"></div>
+
             <!-- SECCIÓN A: DATOS GENERALES -->
             <div class="card">
                 <div class="card-title">
@@ -435,8 +499,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="field-label">DÍA DEL MES</label>
-                        <input type="number" id="hisDia" min="1" max="31">
+                        <label class="field-label">DÍA DEL MES (*)</label>
+                        <input type="number" id="hisDia" min="1" max="31" oninput="limpiarErrorCampo(this)">
                     </div>
                 </div>
                 <div class="grid-2">
@@ -451,58 +515,58 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN B: PADRÓN MAESTRO COLABORATIVO (CON FILIACIÓN COMPLETA) -->
-            <div class="card">
+            <!-- SECCIÓN B: PADRÓN MAESTRO COLABORATIVO (CON FILIACIÓN Y CONDICIÓN OBLIGATORIAS) -->
+            <div class="card" id="cardFiliacion">
                 <div class="card-title">
-                    <span>B. FILIACIÓN DEL PACIENTE (Padrón Colaborativo)</span>
+                    <span>B. FILIACIÓN Y DATOS DEL PACIENTE</span>
                     <span class="badge active" id="badgeTotalPadron">Padrón en Nube</span>
                 </div>
                 <button onclick="abrirEscanerDNI()" class="secondary" style="margin-bottom: 14px;">📷 Escanear Código de Barras DNI</button>
 
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">D.N.I. (8 dígitos — Jala datos)</label>
-                        <input type="text" id="txtDni" inputmode="numeric" placeholder="Escriba o escanee DNI" maxlength="8" oninput="buscarEnPadronLocalYNube(this.value)">
+                        <label class="field-label">D.N.I. (8 dígitos) <span class="badge req-badge">★ Obligatorio</span></label>
+                        <input type="text" id="txtDni" inputmode="numeric" placeholder="8 dígitos DNI" maxlength="8" oninput="limpiarErrorCampo(this); buscarEnPadronLocalYNube(this.value)">
                     </div>
                     <div>
-                        <label class="field-label">HISTORIA CLÍNICA</label>
-                        <input type="text" id="txtHC" placeholder="N° H.C." oninput="actualizarPadronEnVivo()">
+                        <label class="field-label">HISTORIA CLÍNICA <span class="badge req-badge">★ Obligatorio</span></label>
+                        <input type="text" id="txtHC" placeholder="N° H.C." oninput="limpiarErrorCampo(this); actualizarPadronEnVivo()">
                     </div>
                 </div>
 
                 <div>
-                    <label class="field-label">NOMBRES Y APELLIDOS DEL PACIENTE</label>
-                    <input type="text" id="txtNombresPac" placeholder="Apellidos y Nombres completos" oninput="actualizarPadronEnVivo()">
+                    <label class="field-label">NOMBRES Y APELLIDOS DEL PACIENTE <span class="badge req-badge">★ Obligatorio</span></label>
+                    <input type="text" id="txtNombresPac" placeholder="Apellidos y Nombres completos" oninput="limpiarErrorCampo(this); actualizarPadronEnVivo()">
                 </div>
 
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">(*) FECHA DE NACIMIENTO</label>
-                        <input type="date" id="txtFechaNac" onchange="calcularEdadHISDesdeFecha()" oninput="calcularEdadHISDesdeFecha()">
+                        <label class="field-label">FECHA DE NACIMIENTO <span class="badge req-badge">★ Obligatorio</span></label>
+                        <input type="date" id="txtFechaNac" onchange="limpiarErrorCampo(this); calcularEdadHISDesdeFecha()" oninput="limpiarErrorCampo(this); calcularEdadHISDesdeFecha()">
                     </div>
                     <div>
-                        <label class="field-label">SEXO</label>
-                        <select id="selSexo" onchange="actualizarEdadCompuestaManual()">
+                        <label class="field-label">SEXO <span class="badge req-badge">★ Obligatorio</span></label>
+                        <select id="selSexo" onchange="limpiarErrorCampo(this); actualizarEdadCompuestaManual()">
                             <option value="F">👩 Mujer (F)</option>
                             <option value="M">👨 Varón (M)</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="age-dual-box">
-                    <label class="field-label" style="color: var(--primary-dark);">EDAD AUTOMÁTICA O MANUAL (Años + Meses / Meses + Días)</label>
+                <div class="age-dual-box" id="boxEdad">
+                    <label class="field-label" style="color: var(--primary-dark);">EDAD AUTOMÁTICA O MANUAL (Años / Meses / Días)</label>
                     <div class="grid-3">
                         <div>
                             <label class="field-label">AÑOS (A)</label>
-                            <input type="number" id="txtEdadAnios" placeholder="0" min="0" style="background:#fff; margin-bottom:0;" oninput="actualizarEdadCompuestaManual()">
+                            <input type="number" id="txtEdadAnios" placeholder="0" min="0" style="background:#fff; margin-bottom:0;" oninput="limpiarErrorCampo(this); actualizarEdadCompuestaManual()">
                         </div>
                         <div>
                             <label class="field-label">MESES (M)</label>
-                            <input type="number" id="txtEdadMeses" placeholder="0" min="0" max="11" style="background:#fff; margin-bottom:0;" oninput="actualizarEdadCompuestaManual()">
+                            <input type="number" id="txtEdadMeses" placeholder="0" min="0" max="11" style="background:#fff; margin-bottom:0;" oninput="limpiarErrorCampo(this); actualizarEdadCompuestaManual()">
                         </div>
                         <div>
                             <label class="field-label">DÍAS (D)</label>
-                            <input type="number" id="txtEdadDias" placeholder="0" min="0" max="30" style="background:#fff; margin-bottom:0;" oninput="actualizarEdadCompuestaManual()">
+                            <input type="number" id="txtEdadDias" placeholder="0" min="0" max="30" style="background:#fff; margin-bottom:0;" oninput="limpiarErrorCampo(this); actualizarEdadCompuestaManual()">
                         </div>
                     </div>
                     <div class="age-pill-result" id="lblEdadCompuestaResumen">Edad Oficial HIS: 0 D</div>
@@ -511,7 +575,7 @@
                 <div class="grid-3">
                     <div>
                         <label class="field-label">GESTANTE / PUÉRP.</label>
-                        <select id="selGestante">
+                        <select id="selGestante" onchange="limpiarErrorCampo(this)">
                             <option value="">No aplica</option>
                             <option value="G">Gestante (G)</option>
                             <option value="P">Puérpera (P)</option>
@@ -535,7 +599,7 @@
                 <div class="grid-2">
                     <div>
                         <label class="field-label">DISTRITO PROCEDENCIA</label>
-                        <input type="text" id="txtDistrito" value="CHILCA" oninput="actualizarPadronEnVivo()">
+                        <input type="text" id="txtDistrito" value="CHILCA" oninput="limpiarErrorCampo(this); actualizarPadronEnVivo()">
                     </div>
                     <div>
                         <label class="field-label">CENTRO POBLADO</label>
@@ -543,53 +607,66 @@
                     </div>
                 </div>
 
-                <details style="margin-top:6px; background:var(--input-bg); padding:14px; border-radius:14px;">
-                    <summary style="font-size:15px; font-weight:800; color:var(--primary-dark); cursor:pointer;">➕ Antropometría y Condición (N/C/R)</summary>
-                    <div class="grid-2" style="margin-top:12px;">
-                        <div>
-                            <label class="field-label">PESO (kg)</label>
-                            <input type="text" id="txtPeso" placeholder="Ej. 10.5" style="background:#fff;">
-                        </div>
-                        <div>
-                            <label class="field-label">TALLA (cm)</label>
-                            <input type="text" id="txtTalla" placeholder="Ej. 78" style="background:#fff;">
-                        </div>
-                        <div>
-                            <label class="field-label">HEMOGLOBINA (Hb)</label>
-                            <input type="text" id="txtHb" placeholder="Ej. 11.8" style="background:#fff;">
-                        </div>
-                        <div>
-                            <label class="field-label">PC / Pab (cm)</label>
-                            <div style="display:flex; gap:6px;">
-                                <input type="text" id="txtPC" placeholder="PC" style="background:#fff;">
-                                <input type="text" id="txtPab" placeholder="Pab" style="background:#fff;">
-                            </div>
-                        </div>
-                    </div>
+                <!-- CONDICIÓN ESTABLECIMIENTO Y SERVICIO (SIEMPRE OBLIGATORIAS Y VISIBLES) -->
+                <div class="cond-box">
                     <div class="grid-2">
                         <div>
-                            <label class="field-label">FECHA ÚLT. Hb</label>
-                            <input type="date" id="txtFechaHb" style="background:#fff;">
-                        </div>
-                        <div>
-                            <label class="field-label">F. ÚLTIMA REGLA (FUR)</label>
-                            <input type="date" id="txtFUR" style="background:#fff;">
-                        </div>
-                        <div>
-                            <label class="field-label">ESTABLECIMIENTO (N/C/R)</label>
-                            <select id="selCondEstab" style="background:#fff;">
-                                <option value="C">C (Continuador)</option>
-                                <option value="N">N (Nuevo)</option>
-                                <option value="R">R (Reingresante)</option>
+                            <label class="field-label" style="color:var(--primary-dark);">ESTABLECIMIENTO (N/C/R) <span class="badge req-badge">★ Oblig.</span></label>
+                            <select id="selCondEstab" style="background:#fff; margin-bottom:0;" onchange="limpiarErrorCampo(this)">
+                                <option value="">-- Elegir N / C / R --</option>
+                                <option value="N">N - Nuevo</option>
+                                <option value="C" selected>C - Continuador</option>
+                                <option value="R">R - Reingresante</option>
                             </select>
                         </div>
                         <div>
-                            <label class="field-label">SERVICIO (N/C/R)</label>
-                            <select id="selCondServ" style="background:#fff;">
-                                <option value="C">C (Continuador)</option>
-                                <option value="N">N (Nuevo)</option>
-                                <option value="R">R (Reingresante)</option>
+                            <label class="field-label" style="color:var(--primary-dark);">SERVICIO (N/C/R) <span class="badge req-badge">★ Oblig.</span></label>
+                            <select id="selCondServ" style="background:#fff; margin-bottom:0;" onchange="limpiarErrorCampo(this)">
+                                <option value="">-- Elegir N / C / R --</option>
+                                <option value="N">N - Nuevo</option>
+                                <option value="C" selected>C - Continuador</option>
+                                <option value="R">R - Reingresante</option>
                             </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN ANTROPOMETRÍA DINÁMICA SEGÚN EL PAQUETE -->
+                <details id="detailsAntropometria" open style="margin-top:8px; background:var(--input-bg); padding:14px; border-radius:14px; border: 1.5px solid var(--border-color);">
+                    <summary style="font-size:15px; font-weight:800; color:var(--primary-dark); cursor:pointer; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>📏 Antropometría, Hb y FUR</span>
+                        <span id="badgeReqAntropo" class="badge active" style="font-size:12px;">Según paquete</span>
+                    </summary>
+                    <div class="grid-2" style="margin-top:12px;">
+                        <div>
+                            <label class="field-label">PESO (kg) <span id="reqTag_PESO" class="badge req-badge" style="display:none;">★ Obligatorio</span></label>
+                            <input type="text" id="txtPeso" inputmode="decimal" placeholder="Ej. 10.5" style="background:#fff;" oninput="limpiarErrorCampo(this)">
+                        </div>
+                        <div>
+                            <label class="field-label">TALLA (cm) <span id="reqTag_TALLA" class="badge req-badge" style="display:none;">★ Obligatorio</span></label>
+                            <input type="text" id="txtTalla" inputmode="decimal" placeholder="Ej. 78" style="background:#fff;" oninput="limpiarErrorCampo(this)">
+                        </div>
+                        <div>
+                            <label class="field-label">HEMOGLOBINA (Hb) <span id="reqTag_HB" class="badge req-badge" style="display:none;">★ Obligatorio</span></label>
+                            <input type="text" id="txtHb" inputmode="decimal" placeholder="Ej. 11.8" style="background:#fff;" oninput="limpiarErrorCampo(this); sincronizarHbConLineas(this.value)">
+                        </div>
+                        <div>
+                            <label class="field-label">FECHA ÚLT. Hb <span id="reqTag_FHB" class="badge req-badge" style="display:none;">★ Obligatorio</span></label>
+                            <input type="date" id="txtFechaHb" style="background:#fff;" onchange="limpiarErrorCampo(this)" oninput="limpiarErrorCampo(this)">
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div>
+                            <label class="field-label">P. CEFÁLICO (PC) <span id="reqTag_PC" class="badge req-badge" style="display:none;">★ Oblig.</span></label>
+                            <input type="text" id="txtPC" inputmode="decimal" placeholder="PC (cm)" style="background:#fff; margin-bottom:0;" oninput="limpiarErrorCampo(this)">
+                        </div>
+                        <div>
+                            <label class="field-label">P. ABDOM. (Pab) <span id="reqTag_PAB" class="badge req-badge" style="display:none;">★ Oblig.</span></label>
+                            <input type="text" id="txtPab" inputmode="decimal" placeholder="Pab (cm)" style="background:#fff; margin-bottom:0;" oninput="limpiarErrorCampo(this)">
+                        </div>
+                        <div>
+                            <label class="field-label">F. ÚLT. REGLA (FUR) <span id="reqTag_FUR" class="badge req-badge" style="display:none;">★ Oblig.</span></label>
+                            <input type="date" id="txtFUR" style="background:#fff; margin-bottom:0;" onchange="limpiarErrorCampo(this)" oninput="limpiarErrorCampo(this)">
                         </div>
                     </div>
                 </details>
@@ -839,11 +916,7 @@
             doc,
             setDoc,
             getDoc,
-            getDocs,
-            addDoc,
-            query,
-            orderBy,
-            limit
+            getDocs
         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -859,7 +932,6 @@
             const db = getFirestore(app);
             window.dbFirestore = db;
 
-            // 1. Guardar atención completa CON FILIACIÓN en Firestore
             window.enviarAFirebase = async (reg) => {
                 try {
                     await setDoc(doc(db, "atenciones_his", reg.id_atencion), reg);
@@ -868,7 +940,6 @@
                 }
             };
 
-            // 2. Guardar/Actualizar paciente en Padrón Colaborativo de Firestore
             window.guardarPacienteEnFirestore = async (dni, datosPac) => {
                 if (!dni || dni.length !== 8) return;
                 try {
@@ -882,7 +953,6 @@
                 }
             };
 
-            // 3. Buscar paciente por DNI en Padrón de Firestore en tiempo real
             window.buscarPacienteEnFirestore = async (dni) => {
                 if (!dni || dni.length !== 8) return null;
                 try {
@@ -894,7 +964,6 @@
                 return null;
             };
 
-            // 4. Sincronizar catálogo maestro desde Firestore ('configuracion/catalogo_web')
             window.cargarCatalogoDesdeFirestore = async () => {
                 try {
                     const snap = await getDoc(doc(db, "configuracion", "catalogo_web"));
@@ -906,7 +975,6 @@
                 return 0;
             };
 
-            // 5. Descargar todas las atenciones con filiación desde Firestore para estadísticas
             window.obtenerAtencionesDeFirestore = async () => {
                 try {
                     const snap = await getDocs(collection(db, "atenciones_his"));
@@ -914,12 +982,10 @@
                     snap.forEach(d => lista.push(d.data()));
                     return lista;
                 } catch (e) {
-                    console.error("Error descargando atenciones:", e);
                     return [];
                 }
             };
 
-            // Sincronización silenciosa al iniciar
             setTimeout(() => {
                 window.cargarCatalogoDesdeFirestore();
             }, 600);
@@ -961,13 +1027,16 @@
         const listaProfesiones = ["Enfermería", "Medicina", "Obstetricia", "Odontología", "Psicología / Trabajo Social", "Nutrición"];
 
         let toastTimeout = null;
-        function mostrarNotificacion(msj) {
+        function mostrarNotificacion(msj, tipo = "normal") {
             const t = document.getElementById("iosToast");
             if (!t) return;
+            t.classList.remove("toast-error", "toast-success");
+            if (tipo === "error") t.classList.add("toast-error");
+            if (tipo === "success") t.classList.add("toast-success");
             document.getElementById("iosToastText").innerText = msj;
             t.classList.add("show");
             if (toastTimeout) clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => t.classList.remove("show"), 2800);
+            toastTimeout = setTimeout(() => t.classList.remove("show"), 3400);
         }
 
         window.actualizarCatalogoEnCaliente = function(nuevosPaquetes) {
@@ -999,6 +1068,14 @@
         let escaneoProcesado = false;
         let camarasDisponibles = [];
         let indiceCamaraActual = 0;
+
+        function limpiarErrorCampo(el) {
+            if (el) el.classList.remove("campo-faltante");
+            const banner = document.getElementById("bannerNuevoPaciente");
+            if (banner && el && el.id === "txtDni" && el.value.length > 0) {
+                banner.style.display = "none";
+            }
+        }
 
         function actualizarContadorPadron() {
             const b = document.getElementById("badgeTotalPadron");
@@ -1048,17 +1125,17 @@
                 activarInterfazAdmin(true);
                 renderizarBotonesProfesion();
                 cargarProgramas();
-                mostrarNotificacion(`🔓 Modo Administrador Maestro (${catalogoMaestro.length} paquetes activos)`);
+                mostrarNotificacion(`🔓 Modo Administrador Maestro (${catalogoMaestro.length} paquetes activos)`, "success");
                 return;
             }
 
             const user = usuariosAutorizados.find(u => u.dni === dniIn && u.pin === pinIn);
             if (!user) {
-                mostrarNotificacion("⛔ DNI o PIN incorrecto (Use PIN 2026 para Admin)");
+                mostrarNotificacion("⛔ DNI o PIN incorrecto (Use PIN 2026 para Admin)", "error");
                 return;
             }
             if (user.estado !== "ACTIVO") {
-                mostrarNotificacion("⛔ Su acceso ha sido bloqueado");
+                mostrarNotificacion("⛔ Su acceso ha sido bloqueado", "error");
                 return;
             }
 
@@ -1074,7 +1151,7 @@
             document.getElementById("setupModal").style.display = "none";
             renderizarBotonesProfesion();
             cargarProgramas();
-            mostrarNotificacion(`✅ Bienvenido: ${user.nombre} (${user.prof})`);
+            mostrarNotificacion(`✅ Bienvenido: ${user.nombre} (${user.prof})`, "success");
         }
 
         function cerrarSesionDispositivo() {
@@ -1102,7 +1179,6 @@
                     try { codeReader.reset(); } catch (e) {}
                 }
 
-                // Activar formatos 1D (anverso DNI azul) y 2D (reverso PDF417 / QR)
                 const hints = new Map();
                 const formats = [
                     ZXing.BarcodeFormat.CODE_39,
@@ -1119,7 +1195,6 @@
                 camarasDisponibles = await codeReader.listVideoInputDevices();
 
                 if (camarasDisponibles.length > 0) {
-                    // Preferir cámara trasera ("back", "trasera", "environment")
                     const idxTrasera = camarasDisponibles.findIndex(c => /back|traser|rear|environment/i.test(c.label));
                     indiceCamaraActual = idxTrasera >= 0 ? idxTrasera : (camarasDisponibles.length - 1);
                     await iniciarLecturaConCamara(camarasDisponibles[indiceCamaraActual].deviceId);
@@ -1127,7 +1202,6 @@
                     await iniciarLecturaConCamara(null);
                 }
             } catch (e) {
-                console.error("Error cámara:", e);
                 status.innerText = "Permita el acceso a la cámara o use el botón 'Digitar Manual'.";
             }
         }
@@ -1166,7 +1240,7 @@
         async function interpretarTramaDNI(trama) {
             const matchDni = trama.match(/\b\d{8}\b/) || trama.match(/\d{8}/);
             if (!matchDni) {
-                mostrarNotificacion("⚠️ Enfoque nuevamente los 8 dígitos del DNI");
+                mostrarNotificacion("⚠️ Enfoque nuevamente los 8 dígitos del DNI", "error");
                 return;
             }
             const dni = matchDni[0];
@@ -1205,7 +1279,6 @@
                 }
             }
 
-            // Buscar en Padrón Local y en Firestore
             await buscarEnPadronLocalYNube(dni);
             if (!document.getElementById('txtNombresPac').value) {
                 document.getElementById('txtNombresPac').focus();
@@ -1221,7 +1294,7 @@
                 }
                 if (padronPacientes[limpio]) {
                     cargarDatosDePadron(limpio);
-                    mostrarNotificacion(`✨ Paciente cargado del Padrón Local`);
+                    mostrarNotificacion(`✨ Paciente cargado del Padrón Local`, "success");
                     return;
                 }
                 if (window.buscarPacienteEnFirestore) {
@@ -1233,7 +1306,7 @@
                         } catch (e) {}
                         cargarDatosDePadron(limpio);
                         actualizarContadorPadron();
-                        mostrarNotificacion(`☁️ Paciente cargado del Padrón en Firestore`);
+                        mostrarNotificacion(`☁️ Paciente cargado del Padrón en Firestore`, "success");
                     }
                 }
             }
@@ -1381,7 +1454,7 @@
 
         function intentarCambiarProfesion(prof) {
             if (!esAdmin && perfilFijo && prof !== perfilFijo) {
-                mostrarNotificacion(`🔒 Solo tiene autorizado el perfil de ${perfilFijo}`);
+                mostrarNotificacion(`🔒 Solo tiene autorizado el perfil de ${perfilFijo}`, "error");
                 return;
             }
             profesionActiva = prof;
@@ -1419,15 +1492,18 @@
                 (sb === "TODAS_SUB" || i.sub === sb)
             );
             document.getElementById("countPaq").innerText = filtrados.length;
-            document.getElementById("packageList").innerHTML = filtrados.map(p => `
-                <div class="package-item ${paqueteSeleccionado?.codigo === p.codigo ? 'selected' : ''}" onclick='seleccionarPaquetePorCodigo("${p.codigo}")'>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px;">
-                        <h4>${p.nombre}</h4>
-                        <span class="badge active">${p.lineas.length} líneas</span>
+            document.getElementById("packageList").innerHTML = filtrados.map(p => {
+                const reqs = (p.obligatorios && p.obligatorios.length > 0) ? `⚡ Exige: ${p.obligatorios.join(', ')}` : 'Estándar';
+                return `
+                    <div class="package-item ${paqueteSeleccionado?.codigo === p.codigo ? 'selected' : ''}" onclick='seleccionarPaquetePorCodigo("${p.codigo}")'>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px;">
+                            <h4>${p.nombre}</h4>
+                            <span class="badge active">${p.lineas.length} líneas</span>
+                        </div>
+                        <p><b>${p.prog}</b> — ${p.sub}<br><span>Cód: <b>${p.codigo}</b> | ${reqs}</span></p>
                     </div>
-                    <p><b>${p.prog}</b> — ${p.sub}<br><span>Cód: <b>${p.codigo}</b></span></p>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             if (filtrados.length > 0) seleccionarPaquetePorCodigo(filtrados[0].codigo);
         }
 
@@ -1438,7 +1514,54 @@
             document.querySelectorAll('.package-item').forEach(el => {
                 el.classList.toggle('selected', el.getAttribute('onclick')?.includes(codPaq));
             });
+            actualizarIndicadoresObligatoriosPaquete();
             renderizarTablaLineasHIS();
+        }
+
+        // ==================== ACTUALIZAR INDICADORES DE CAMPOS OBLIGATORIOS SEGÚN PAQUETE ====================
+        function actualizarIndicadoresObligatoriosPaquete() {
+            const mapaCampos = {
+                "PESO": "txtPeso",
+                "TALLA": "txtTalla",
+                "HB": "txtHb",
+                "FHB": "txtFechaHb",
+                "PC": "txtPC",
+                "PAB": "txtPab",
+                "FUR": "txtFUR"
+            };
+            const reqs = (paqueteSeleccionado && Array.isArray(paqueteSeleccionado.obligatorios))
+                ? paqueteSeleccionado.obligatorios
+                : [];
+
+            Object.keys(mapaCampos).forEach(cod => {
+                const tag = document.getElementById("reqTag_" + cod);
+                const input = document.getElementById(mapaCampos[cod]);
+                const esOblig = reqs.includes(cod);
+                if (tag) tag.style.display = esOblig ? "inline-block" : "none";
+                if (input) input.classList.toggle("campo-obligatorio-activo", esOblig);
+            });
+
+            const badge = document.getElementById("badgeReqAntropo");
+            if (badge) {
+                badge.innerText = reqs.length > 0 ? `⚡ Obligatorio: ${reqs.join(", ")}` : "Opcional en este paquete";
+            }
+            if (reqs.length > 0) {
+                const det = document.getElementById("detailsAntropometria");
+                if (det) det.open = true;
+            }
+        }
+
+        function sincronizarHbConLineas(valHb) {
+            if (!paqueteSeleccionado || !Array.isArray(paqueteSeleccionado.lineas)) return;
+            const limpio = (valHb || "").trim();
+            let huboCambio = false;
+            paqueteSeleccionado.lineas.forEach(l => {
+                if ((l.cod || "").startsWith("85018") || /hemoglobina|dosaje de hb/i.test(l.desc || "")) {
+                    l.lab1 = limpio;
+                    huboCambio = true;
+                }
+            });
+            if (huboCambio) renderizarTablaLineasHIS();
         }
 
         function renderizarTablaLineasHIS() {
@@ -1492,13 +1615,156 @@
             renderizarTablaLineasHIS();
         }
 
+        // ==================== VALIDACIÓN GUIADA ANTES DE GUARDAR ====================
+        function validarCamposObligatoriosAntesDeGuardar() {
+            // Limpiar marcas previas
+            document.querySelectorAll(".campo-faltante").forEach(el => el.classList.remove("campo-faltante"));
+            const divAlerta = document.getElementById("alertaCamposFaltantes");
+            divAlerta.style.display = "none";
+
+            const faltantes = [];
+            let primerElementoFaltante = null;
+            let faltaEnAntropometria = false;
+
+            function marcarFaltante(idElem, etiqueta, esAntropo = false) {
+                faltantes.push(etiqueta);
+                const el = document.getElementById(idElem);
+                if (el) {
+                    el.classList.add("campo-faltante");
+                    if (!primerElementoFaltante) primerElementoFaltante = el;
+                }
+                if (esAntropo) faltaEnAntropometria = true;
+            }
+
+            // 1. Campos de Filiación SIEMPRE obligatorios
+            const dni = document.getElementById("txtDni").value.trim();
+            if (dni.length !== 8) marcarFaltante("txtDni", "DNI del Paciente (8 dígitos)");
+
+            const hc = document.getElementById("txtHC").value.trim();
+            if (!hc) marcarFaltante("txtHC", "Historia Clínica");
+
+            const nombres = document.getElementById("txtNombresPac").value.trim();
+            if (nombres.length < 3) marcarFaltante("txtNombresPac", "Nombres y Apellidos del Paciente");
+
+            const fNac = document.getElementById("txtFechaNac").value.trim();
+            const edObj = obtenerObjetoEdadActual();
+            const tieneEdadManual = (edObj.anios > 0 || edObj.meses > 0 || edObj.dias > 0);
+            if (!fNac && !tieneEdadManual) {
+                marcarFaltante("txtFechaNac", "Fecha de Nacimiento o Edad (A/M/D)");
+            }
+
+            const distrito = document.getElementById("txtDistrito").value.trim();
+            if (!distrito) marcarFaltante("txtDistrito", "Distrito de Procedencia");
+
+            // 2. Condición Establecimiento y Servicio SIEMPRE obligatorias
+            const condEstab = document.getElementById("selCondEstab").value;
+            if (!condEstab) marcarFaltante("selCondEstab", "Condición Establecimiento (N/C/R)");
+
+            const condServ = document.getElementById("selCondServ").value;
+            if (!condServ) marcarFaltante("selCondServ", "Condición Servicio (N/C/R)");
+
+            // 3. Campos Antropométricos/Clínicos obligatorios según la columna 'campos_obligatorios' del paquete
+            const reqs = (paqueteSeleccionado && Array.isArray(paqueteSeleccionado.obligatorios))
+                ? paqueteSeleccionado.obligatorios
+                : [];
+
+            const catalogoReglasAntropo = {
+                "PESO": { id: "txtPeso", nombre: "Peso (kg)" },
+                "TALLA": { id: "txtTalla", nombre: "Talla (cm)" },
+                "HB": { id: "txtHb", nombre: "Hemoglobina (Hb)" },
+                "FHB": { id: "txtFechaHb", nombre: "Fecha de última Hb" },
+                "PC": { id: "txtPC", nombre: "Perímetro Cefálico (PC)" },
+                "PAB": { id: "txtPab", nombre: "Perímetro Abdominal (Pab)" },
+                "FUR": { id: "txtFUR", nombre: "Fecha de Última Regla (FUR)" }
+            };
+
+            reqs.forEach(codReq => {
+                const regla = catalogoReglasAntropo[codReq];
+                if (regla) {
+                    const val = document.getElementById(regla.id)?.value.trim();
+                    if (!val) {
+                        marcarFaltante(regla.id, regla.nombre, true);
+                    }
+                }
+            });
+
+            if (faltantes.length > 0) {
+                if (faltaEnAntropometria) {
+                    const det = document.getElementById("detailsAntropometria");
+                    if (det) det.open = true;
+                }
+                const msjLista = faltantes.join(", ");
+                divAlerta.innerHTML = `⚠️ <b>Falta rellenar (${faltantes.length}):</b> ${msjLista}`;
+                divAlerta.style.display = "block";
+                mostrarNotificacion(`⚠️ Falta rellenar: ${faltantes[0]}${faltantes.length > 1 ? ' y ' + (faltantes.length - 1) + ' más' : ''}`, "error");
+
+                if (primerElementoFaltante) {
+                    primerElementoFaltante.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => primerElementoFaltante.focus(), 350);
+                }
+                return false;
+            }
+            return true;
+        }
+
+        // ==================== LIMPIAR HOJA DEL PACIENTE Y VOLVER ARRIBA ====================
+        function limpiarFormularioPaciente() {
+            const idsLimpiar = [
+                "txtDni", "txtHC", "txtNombresPac", "txtFechaNac",
+                "txtEdadAnios", "txtEdadMeses", "txtEdadDias",
+                "txtPeso", "txtTalla", "txtHb", "txtFechaHb",
+                "txtPC", "txtPab", "txtFUR"
+            ];
+            idsLimpiar.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.value = "";
+                    el.classList.remove("campo-faltante");
+                }
+            });
+
+            document.getElementById("selGestante").value = "";
+            document.getElementById("selFinanc").value = "2";
+            document.getElementById("txtEtnia").value = "80";
+            document.getElementById("txtDistrito").value = "CHILCA";
+            document.getElementById("txtCentroPob").value = "CHILCA";
+            document.getElementById("selCondEstab").value = "C";
+            document.getElementById("selCondServ").value = "C";
+            document.getElementById("lblEdadCompuestaResumen").innerText = "Edad Oficial HIS: 0 D";
+            document.getElementById("alertaCamposFaltantes").style.display = "none";
+
+            // Reiniciar valores editados de las líneas del paquete actual a su plantilla limpia
+            if (paqueteSeleccionado) {
+                seleccionarPaquetePorCodigo(paqueteSeleccionado.codigo);
+            }
+
+            // Mostrar banner 'Ingresar nuevo paciente' y subir suavemente al inicio
+            const banner = document.getElementById("bannerNuevoPaciente");
+            if (banner) {
+                banner.innerHTML = `✅ Atención #${atencionesLocal.length} registrada — <b>👤 Ingresar nuevo paciente</b>`;
+                banner.style.display = "block";
+            }
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setTimeout(() => {
+                const inputDni = document.getElementById("txtDni");
+                if (inputDni) inputDni.focus();
+            }, 450);
+        }
+
         function finalizarAtencion() {
             if (!paqueteSeleccionado) {
-                mostrarNotificacion("Seleccione un paquete antes de guardar");
+                mostrarNotificacion("⚠️ Seleccione un paquete antes de guardar", "error");
                 return;
             }
-            const dniPac = document.getElementById("txtDni").value.trim() || "S/D";
-            const nomPac = document.getElementById("txtNombresPac").value.trim() || "PACIENTE REGISTRADO";
+
+            // Validar campos obligatorios antes de permitir guardar
+            if (!validarCamposObligatoriosAntesDeGuardar()) {
+                return;
+            }
+
+            const dniPac = document.getElementById("txtDni").value.trim();
+            const nomPac = document.getElementById("txtNombresPac").value.trim();
             const fNac = document.getElementById("txtFechaNac").value;
             const sexoPac = document.getElementById("selSexo").value;
             const edObj = obtenerObjetoEdadActual();
@@ -1559,11 +1825,11 @@
                 etnia: document.getElementById("txtEtnia").value,
                 distrito: distPac,
                 centro_poblado: cpPac,
-                peso: document.getElementById("txtPeso").value,
-                talla: document.getElementById("txtTalla").value,
-                hb: document.getElementById("txtHb").value,
-                pc: document.getElementById("txtPC").value,
-                pab: document.getElementById("txtPab").value,
+                peso: document.getElementById("txtPeso").value.trim(),
+                talla: document.getElementById("txtTalla").value.trim(),
+                hb: document.getElementById("txtHb").value.trim(),
+                pc: document.getElementById("txtPC").value.trim(),
+                pab: document.getElementById("txtPab").value.trim(),
                 fecha_ult_hb: document.getElementById("txtFechaHb").value,
                 fur: document.getElementById("txtFUR").value,
                 cond_estab: document.getElementById("selCondEstab").value,
@@ -1581,7 +1847,6 @@
                 localStorage.setItem("atenciones_aphis_oficial", JSON.stringify(atencionesLocal));
             } catch (e) {}
 
-            // Enviar a Firestore y a Google Sheets (Super Tabla Maestra)
             if (window.enviarAFirebase) window.enviarAFirebase(reg);
             const urlS = localStorage.getItem("aphis_url_sheets") || URL_SHEETS_PRECONFIGURADA;
             if (urlS) {
@@ -1592,13 +1857,15 @@
                 }).catch(() => {});
             }
 
-            mostrarNotificacion(`✅ Atención #${atencionesLocal.length} guardada con filiación en Firestore y Padrón`);
+            // Borrar toda la hoja actual, subir al inicio y mostrar 'Ingresar nuevo paciente'
+            limpiarFormularioPaciente();
+            mostrarNotificacion(`✅ Guardado — 👤 Ingresar nuevo paciente`, "success");
         }
 
         // ==================== IMPRESIÓN HOJA HIS CON GUIONES DESPUÉS DE LÍNEA 3 ====================
         function imprimirHojaHISOficial() {
             if (atencionesLocal.length === 0) {
-                mostrarNotificacion("Guarde al menos 1 atención antes de imprimir");
+                mostrarNotificacion("Guarde al menos 1 atención antes de imprimir", "error");
                 return;
             }
             const hoy = new Date();
@@ -1616,18 +1883,15 @@
 
             tbody.innerHTML = atencionesLocal.map((at) => {
                 const lineas = at.lineasDetalle || [];
-                // Múltiplo de 3 filas para calzar con los bloques físicos de 3 líneas de la Hoja HIS MINSA
                 const nFilas = Math.ceil(Math.max(lineas.length, 3) / 3) * 3;
                 let htmlBloque = "";
 
                 for (let i = 0; i < nFilas; i++) {
                     const ln = lineas[i] || { desc: "", cod: "", dx: "", lab1: "", lab2: "", lab3: "" };
 
-                    // Cada 3 líneas se abre un bloque físico en la Hoja HIS
                     if (i % 3 === 0) {
                         numeroOrdenCasillero++;
                         if (i === 0) {
-                            // Primer bloque (líneas 1 a 3): Encabezado con nombres del paciente
                             htmlBloque += `
                                 <tr>
                                     <td colspan="19" style="text-align:left; background:#f2f2f2; font-weight:bold; padding:2px 6px;">
@@ -1636,7 +1900,6 @@
                                 </tr>
                             `;
                         } else {
-                            // Bloques de continuación (líneas 4 en adelante): solo guiones para no repetir filiación
                             htmlBloque += `
                                 <tr>
                                     <td colspan="19" style="text-align:left; background:#fafafa; color:#444; font-weight:bold; padding:1.5px 6px;">
@@ -1649,7 +1912,6 @@
 
                     htmlBloque += `<tr>`;
                     if (i === 0) {
-                        // Primeras 3 líneas: Datos completos de filiación
                         htmlBloque += `
                             <td rowspan="3"><b>${numeroOrdenCasillero}</b></td>
                             <td rowspan="3">${at.dia}</td>
@@ -1664,7 +1926,7 @@
                             <td rowspan="3"><b>${at.cond_serv}</b></td>
                         `;
                     } else if (i % 3 === 0) {
-                        // A partir de la 4ta línea (i = 3, 6, 9, 12...): SOLO GUIONES (-) en filiación
+                        // Cuando excede las 3 líneas: solo guiones (-) en filiación
                         htmlBloque += `
                             <td rowspan="3"><b>-</b></td>
                             <td rowspan="3">-</td>
@@ -1724,9 +1986,9 @@
                 renderizarBotonesProfesion();
                 renderConsolidado();
                 renderListaUsuariosAdmin();
-                mostrarNotificacion("🔓 Modo Administrador Total Activado");
+                mostrarNotificacion("🔓 Modo Administrador Total Activado", "success");
             } else {
-                mostrarNotificacion("❌ Clave Maestra incorrecta");
+                mostrarNotificacion("❌ Clave Maestra incorrecta", "error");
             }
         }
 
@@ -1759,9 +2021,9 @@
                     window.actualizarCatalogoEnCaliente(data.catalogo);
                     totalPaq = data.catalogo.length;
                 }
-                mostrarNotificacion(`✅ Sincronizado (${totalPaq || catalogoMaestro.length} paquetes activos)`);
+                mostrarNotificacion(`✅ Sincronizado (${totalPaq || catalogoMaestro.length} paquetes activos)`, "success");
             } catch (e) {
-                mostrarNotificacion(`✅ Catálogo Firestore activo (${totalPaq || catalogoMaestro.length} paquetes)`);
+                mostrarNotificacion(`✅ Catálogo Firestore activo (${totalPaq || catalogoMaestro.length} paquetes)`, "success");
             }
         }
 
@@ -1784,7 +2046,7 @@
                 localStorage.setItem("atenciones_aphis_oficial", JSON.stringify(atencionesLocal));
             } catch (e) {}
             renderConsolidado();
-            mostrarNotificacion(`✅ ${atencionesLocal.length} atenciones con filiación cargadas`);
+            mostrarNotificacion(`✅ ${atencionesLocal.length} atenciones con filiación cargadas`, "success");
         }
 
         function renderListaUsuariosAdmin() {
@@ -1807,13 +2069,13 @@
             const nom = document.getElementById("nuevoUserNombre").value.trim();
             const prof = document.getElementById("nuevoUserProf").value;
             if (dni.length !== 8 || !pin || !nom) {
-                mostrarNotificacion("Complete DNI (8 dígitos), PIN y Nombre");
+                mostrarNotificacion("Complete DNI (8 dígitos), PIN y Nombre", "error");
                 return;
             }
             usuariosAutorizados.push({ dni, pin, nombre: nom, prof, estado: "ACTIVO", rol: "USER" });
             try { localStorage.setItem("aphis_usuarios_whitelist", JSON.stringify(usuariosAutorizados)); } catch (e) {}
             renderListaUsuariosAdmin();
-            mostrarNotificacion(`✅ Usuario ${nom} autorizado`);
+            mostrarNotificacion(`✅ Usuario ${nom} autorizado`, "success");
         }
 
         function alternarEstadoUsuario(idx) {
@@ -1831,7 +2093,7 @@
                     try { localStorage.setItem("aphis_clave_maestra", nuevaClave); } catch (e) {}
                 }
             }
-            mostrarNotificacion("✅ Configuración guardada");
+            mostrarNotificacion("✅ Configuración guardada", "success");
         }
 
         function renderConsolidado() {
@@ -1873,7 +2135,7 @@
         }
 
         function exportarCSV() {
-            if (atencionesLocal.length === 0) { mostrarNotificacion("Sin registros para exportar"); return; }
+            if (atencionesLocal.length === 0) { mostrarNotificacion("Sin registros para exportar", "error"); return; }
             let csv = "ID_Atencion,Fecha,Turno,Dia,IPRESS,UPSS,DNI_Profesional,Nombre_Profesional,Profesion,DNI_Paciente,Historia_Clinica,Gestante_Puerpera,Nombres_Apellidos_Paciente,Fecha_Nacimiento,Edad_HIS,Edad_Anios,Edad_Meses,Edad_Dias,Sexo,Financiador,Etnia,Distrito,Centro_Poblado,Peso_kg,Talla_cm,Hemoglobina,PC_cm,Pab_cm,Fecha_Ult_Hb,FUR,Cond_Estab,Cond_Serv,Programa,Subgrupo,Codigo_Paquete,Nombre_Paquete,Total_Lineas,Detalle_CIE_CPT_LAB\n";
             atencionesLocal.forEach(a => {
                 const det = (a.lineasDetalle || []).map((l, idx) => `${idx+1}:${l.cod}(${l.dx})[${l.lab1||''}/${l.lab2||''}/${l.lab3||''}]-${l.desc}`).join(" | ");
@@ -1888,7 +2150,7 @@
 
         function exportarPadronCSV() {
             const dnis = Object.keys(padronPacientes);
-            if (dnis.length === 0) { mostrarNotificacion("Sin pacientes en el Padrón"); return; }
+            if (dnis.length === 0) { mostrarNotificacion("Sin pacientes en el Padrón", "error"); return; }
             let csv = "DNI,Historia_Clinica,Nombres_Apellidos,Fecha_Nacimiento,Sexo,Edad_Anios,Edad_Meses,Edad_Dias,Financiador,Distrito,Centro_Poblado\n";
             dnis.forEach(dni => {
                 const p = padronPacientes[dni];

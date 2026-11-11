@@ -890,15 +890,21 @@
     </div>
 
     <div id="scannerModal" class="modal-overlay">
-        <div class="modal-box" style="max-width: 440px;">
-            <h3 style="margin-bottom: 4px; font-size: 18px;">📸 Escáner Inteligente DNI / DNIe</h3>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Enfoque el <b>Código de Barras</b> (autocompleta Nombres por internet) o las <b>3 líneas inferiores (I&lt;PER...)</b> del reverso del DNIe para leer Fecha Nac., Edad y Sexo.</p>
+        <div class="modal-box" style="max-width: 450px;">
+            <h3 style="margin-bottom: 4px; font-size: 18px;">📸 Escáner Reverso DNI / DNIe</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Apunte al reverso completo del DNI: primero capta el <b>Código de Barras (DNI + Nombres)</b> sin cerrarse y enseguida lee las <b>3 líneas inferiores (I&lt;PER...)</b> para <b>Fecha Nac., Edad y Sexo</b>.</p>
+            <div id="boxEstadoLecturaDNI" style="display:none; background: #E9F9EE; border: 1.5px solid var(--success); border-radius: 12px; padding: 8px 10px; margin-bottom: 8px; text-align: left; font-size: 12.5px; color: #0E6027;"></div>
             <div style="position: relative; width: 100%; margin-bottom: 10px;">
                 <video id="cameraPreview" playsinline muted style="margin-bottom: 0;"></video>
-                <div style="position: absolute; inset: 12% 6%; border: 2px dashed rgba(52, 199, 89, 0.85); border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.22);"></div>
+                <div style="position: absolute; inset: 10% 5%; border: 2px dashed rgba(52, 199, 89, 0.9); border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.22); display:flex; flex-direction:column; justify-content:flex-end; padding:6px;">
+                    <div style="border-top: 1.5px dashed rgba(255, 204, 0, 0.95); padding-top: 4px; font-size: 11px; font-weight: 800; color: #FFE600; text-shadow: 0 1px 3px #000; text-align: center;">
+                        Encuadre aquí abajo las 3 líneas (I&lt;PER...) para Fecha Nac. y Sexo
+                    </div>
+                </div>
             </div>
             <p id="scannerStatus" style="font-size: 13px; color: var(--primary); margin-bottom: 10px; font-weight:700;">Iniciando cámara...</p>
-            <button id="btnCapturarReversoMRZ" onclick="capturarYLeerReversoDNIe()" class="success" style="margin-bottom: 8px; padding: 12px; font-size: 14px;">📸 Capturar Reverso Completo DNIe (Lee Fecha Nac + Sexo + Nombres)</button>
+            <button id="btnUsarDniParcial" onclick="cerrarEscanerDNI()" class="success" style="display:none; margin-bottom: 8px; padding: 12px; font-size: 14px;">✅ Listo: Usar DNI y Nombres ya captados</button>
+            <button id="btnCapturarReversoMRZ" onclick="capturarYLeerReversoDNIe(true)" class="admin" style="margin-bottom: 8px; padding: 12px; font-size: 14px;">📸 Leer 3 Líneas Inferiores Ahora (Fecha Nac + Sexo + Nombres)</button>
             <div class="grid-2" style="margin-bottom: 8px;">
                 <button onclick="cambiarCamaraDNI()" class="secondary" style="font-size:13.5px; padding:10px;">🔄 Cambiar Lente</button>
                 <button onclick="procesarDniSimulado()" class="secondary" style="font-size:13.5px; padding:10px;">⌨️ Digitar Manual</button>
@@ -1357,14 +1363,60 @@
 
         // ==================== ESCÁNER INTELIGENTE DNI / DNIe (BARRAS + QR + MRZ OCR + API RENIEC) ====================
         let nativeDetectorTimer = null;
+        let autoMRZTimer = null;
         let ocrEnCurso = false;
+        let dniCaptadoEnEscaner = "";
+
+        function actualizarPanelProgresoEscaner() {
+            const box = document.getElementById("boxEstadoLecturaDNI");
+            const btnParcial = document.getElementById("btnUsarDniParcial");
+            if (!box) return;
+            const dniAct = document.getElementById("txtDni").value.trim() || dniCaptadoEnEscaner;
+            const nomAct = document.getElementById("txtNombresPac").value.trim();
+            const fecAct = document.getElementById("txtFechaNac").value.trim();
+            const sexAct = document.getElementById("selSexo").value;
+
+            if (!dniAct) {
+                box.style.display = "none";
+                if (btnParcial) btnParcial.style.display = "none";
+                return;
+            }
+
+            box.style.display = "block";
+            box.innerHTML = `
+                <div>✅ <b>DNI captado:</b> ${dniAct}</div>
+                <div>${nomAct ? `✅ <b>Nombres:</b> ${nomAct}` : `⏳ <b>Nombres:</b> Buscando en base de datos...`}</div>
+                <div>${fecAct ? `✅ <b>Fecha Nac. y Sexo:</b> ${fecAct} (${sexAct})` : `📸 <b>Falta Fecha Nac. y Sexo:</b> Mantenga enfocadas las <b>3 líneas inferiores (I&lt;PER...)</b>`}</div>
+            `;
+            if (btnParcial) {
+                btnParcial.style.display = "block";
+                btnParcial.innerText = nomAct
+                    ? `✅ Listo: Continuar con ${nomAct.split(" ")[0]} (Ingresar Fecha Nac. manual)`
+                    : `✅ Listo: Continuar con DNI ${dniAct}`;
+            }
+
+            // Si ya tenemos DNI + Nombres + Fecha de Nacimiento (del Padrón o de las 3 líneas MRZ), cerramos automáticamente
+            if (dniAct && nomAct && fecAct && document.getElementById('scannerModal').style.display !== 'none') {
+                escaneoProcesado = true;
+                setTimeout(() => {
+                    cerrarEscanerDNI();
+                    mostrarNotificacion(`✅ DNIe completo: ${nomAct} (${fecAct})`, "success");
+                }, 350);
+            }
+        }
 
         async function abrirEscanerDNI() {
             escaneoProcesado = false;
             ocrEnCurso = false;
+            dniCaptadoEnEscaner = "";
+            const box = document.getElementById("boxEstadoLecturaDNI");
+            if (box) box.style.display = "none";
+            const btnParcial = document.getElementById("btnUsarDniParcial");
+            if (btnParcial) btnParcial.style.display = "none";
+
             document.getElementById('scannerModal').style.display = 'flex';
             const status = document.getElementById('scannerStatus');
-            status.innerText = "Activando cámara HD para Código de Barras, QR y Reverso DNIe...";
+            status.innerText = "Activando cámara HD para Código de Barras, QR y 3 líneas inferiores (I<PER)...";
 
             try {
                 detenerStreamsEscaner();
@@ -1388,7 +1440,6 @@
                 }
 
                 if (camarasDisponibles && camarasDisponibles.length > 0) {
-                    // Priorizar cámara trasera principal 1x (evitar gran angular 0.5x / ultra-wide que desenfoca de cerca)
                     const traseras = camarasDisponibles.filter(c => /back|traser|rear|environment/i.test(c.label));
                     let elegida = null;
                     if (traseras.length > 0) {
@@ -1409,7 +1460,7 @@
 
         async function iniciarLecturaConCamara(deviceId) {
             const status = document.getElementById('scannerStatus');
-            status.innerText = "Enfoque el Código de Barras, QR o las 3 líneas inferiores (I<PER) del DNIe...";
+            status.innerText = "Apunte al reverso del DNI: leerá Barras y luego las 3 líneas inferiores (I<PER)...";
 
             const videoConfig = deviceId
                 ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, focusMode: { ideal: "continuous" } }
@@ -1429,7 +1480,6 @@
                 await v.play();
             }
 
-            // Activar enfoque continuo por hardware si el lente del celular lo soporta
             setTimeout(async () => {
                 try {
                     const v = document.getElementById('cameraPreview');
@@ -1442,7 +1492,6 @@
                 } catch (e) {}
             }, 600);
 
-            // Activar BarcodeDetector nativo del celular (Android/iOS) en paralelo para QR y PDF417 de alta densidad
             if ('BarcodeDetector' in window) {
                 try {
                     const detector = new window.BarcodeDetector({
@@ -1450,7 +1499,7 @@
                     });
                     if (nativeDetectorTimer) clearInterval(nativeDetectorTimer);
                     nativeDetectorTimer = setInterval(async () => {
-                        if (escaneoProcesado || ocrEnCurso) return;
+                        if (escaneoProcesado) return;
                         const v = document.getElementById('cameraPreview');
                         if (!v || v.readyState < 2) return;
                         try {
@@ -1464,98 +1513,127 @@
                                 }
                             }
                         } catch (e) {}
-                    }, 180);
+                    }, 200);
                 } catch (e) {}
             }
+
+            // Escaneo automático continuo de las 3 líneas inferiores (I<PER...) cada 1.1s sin cerrar la cámara antes de tiempo
+            if (autoMRZTimer) clearInterval(autoMRZTimer);
+            autoMRZTimer = setInterval(() => {
+                if (escaneoProcesado || ocrEnCurso) return;
+                const v = document.getElementById('cameraPreview');
+                if (v && v.readyState >= 2) {
+                    capturarYLeerReversoDNIe(false);
+                }
+            }, 1150);
         }
 
-        function procesarCodigoDetectadoEnCamara(rawText) {
+        async function procesarCodigoDetectadoEnCamara(rawText) {
             if (!rawText || escaneoProcesado) return;
             const limpio = String(rawText).trim();
 
-            // 1. Si el código de barras, PDF417 o QR contiene los 8 dígitos del DNI o la trama MRZ
-            if (/\d{8}/.test(limpio) || /I<PER/i.test(limpio)) {
+            // Si la trama ya trae las 3 líneas MRZ completas con Fecha de Nacimiento
+            const mrzDirecto = extraerDatosDesdeMRZ(limpio, dniCaptadoEnEscaner);
+            if (mrzDirecto && mrzDirecto.dni && mrzDirecto.fechaISO) {
                 escaneoProcesado = true;
                 cerrarEscanerDNI();
-                interpretarTramaDNI(limpio);
+                await aplicarDatosExtraidosDNI(mrzDirecto);
                 return;
             }
 
-            // 2. Si leyó el QR encriptado de seguridad del DNIe 3.0 (que no incluye el DNI en texto plano),
-            //    dispara automáticamente la lectura óptica (OCR) de las 3 líneas MRZ (I<PER...) del mismo reverso
+            // Si es el Código de Barras 1D (solo trae los 8 dígitos del DNI):
+            // NO cerramos la cámara de golpe; guardamos el DNI, cargamos Nombres en segundo plano
+            // y mantenemos la cámara abierta para leer las 3 líneas inferiores (I<PER) con Fecha Nac. y Sexo
+            const match8 = limpio.match(/\b(\d{8})\b/) || limpio.match(/(\d{8})/);
+            if (match8) {
+                const dniLeido = match8[1];
+                if (dniCaptadoEnEscaner !== dniLeido) {
+                    dniCaptadoEnEscaner = dniLeido;
+                    const status = document.getElementById('scannerStatus');
+                    if (status) {
+                        status.innerText = `✅ Código de Barras leído (DNI ${dniLeido}). Ahora enfoque las 3 líneas inferiores (I<PER...) para Fecha Nac. y Sexo...`;
+                    }
+                    await interpretarTramaDNI(limpio);
+                    actualizarPanelProgresoEscaner();
+                }
+                return;
+            }
+
+            // Si leyó el QR encriptado del DNIe 3.0
             if (!ocrEnCurso && limpio.length >= 8) {
                 const status = document.getElementById('scannerStatus');
                 if (status) {
-                    status.innerText = "✨ QR de DNIe detectado. Leyendo las 3 líneas inferiores (I<PER) para extraer DNI, Fecha Nac. y Nombres...";
+                    status.innerText = "✨ QR de DNIe detectado. Leyendo las 3 líneas inferiores (I<PER) para extraer Fecha Nac., Sexo y Nombres...";
                 }
-                capturarYLeerReversoDNIe();
+                capturarYLeerReversoDNIe(false);
             }
         }
 
-        async function capturarYLeerReversoDNIe() {
+        async function capturarYLeerReversoDNIe(esManual = false) {
             if (ocrEnCurso || escaneoProcesado) return;
             const v = document.getElementById('cameraPreview');
             const status = document.getElementById('scannerStatus');
             const btn = document.getElementById('btnCapturarReversoMRZ');
-            if (!v || v.readyState < 2) {
-                mostrarNotificacion("Espere un segundo a que inicie la cámara", "error");
-                return;
-            }
-            if (typeof Tesseract === 'undefined') {
-                mostrarNotificacion("Enfoque el código de barras superior del DNI", "error");
-                return;
-            }
+            if (!v || v.readyState < 2 || typeof Tesseract === 'undefined') return;
 
             ocrEnCurso = true;
-            if (btn) {
+            if (esManual && btn) {
                 btn.disabled = true;
-                btn.innerText = "⏳ Leyendo reverso del DNIe...";
+                btn.innerText = "⏳ Leyendo las 3 líneas inferiores (I<PER)...";
             }
-            if (status) status.innerText = "🔍 Analizando zona inferior del DNIe (I<PER: DNI, Fecha Nac., Sexo y Nombres)...";
 
             try {
+                const vw = v.videoWidth || 1280;
+                const vh = v.videoHeight || 720;
                 const canvas = document.createElement('canvas');
-                const w = v.videoWidth || 1280;
-                const h = v.videoHeight || 720;
-                canvas.width = w;
-                canvas.height = h;
+                // Escalar a ancho óptimo con alto contraste para resaltar los caracteres OCR-B de I<PER...
+                const targetW = Math.min(1100, vw);
+                const scale = targetW / vw;
+                canvas.width = targetW;
+                canvas.height = Math.round(vh * scale);
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(v, 0, 0, w, h);
+                ctx.filter = 'grayscale(100%) contrast(175%)';
+                ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
 
                 const res = await Tesseract.recognize(canvas, 'eng');
                 const textoOCR = (res && res.data && res.data.text) ? res.data.text : "";
-                const datosMRZ = extraerDatosDesdeMRZ(textoOCR);
+                const datosMRZ = extraerDatosDesdeMRZ(textoOCR, dniCaptadoEnEscaner);
 
-                if (datosMRZ && datosMRZ.dni) {
-                    escaneoProcesado = true;
-                    cerrarEscanerDNI();
+                if (datosMRZ && datosMRZ.dni && (datosMRZ.fechaISO || datosMRZ.nombres)) {
+                    dniCaptadoEnEscaner = datosMRZ.dni;
                     await aplicarDatosExtraidosDNI(datosMRZ);
-                    return;
-                } else {
-                    if (status) {
-                        status.innerText = "⚠️ Acerque un poco más las 3 líneas inferiores (I<PER...) del reverso del DNIe o apunte al Código de Barras.";
+                    actualizarPanelProgresoEscaner();
+
+                    // Si ya consiguió la Fecha de Nacimiento de las 3 líneas inferiores, cerrar automáticamente
+                    if (datosMRZ.fechaISO) {
+                        escaneoProcesado = true;
+                        cerrarEscanerDNI();
+                        const nomFinal = document.getElementById('txtNombresPac').value || datosMRZ.nombres || datosMRZ.dni;
+                        mostrarNotificacion(`✅ Reverso DNIe leído: ${nomFinal} | Nac: ${datosMRZ.fechaISO}`, "success");
+                        return;
                     }
+                } else if (esManual && status) {
+                    status.innerText = "⚠️ Acerque las 3 líneas inferiores (I<PER...) al recuadro inferior para leer Fecha Nac. y Sexo.";
                 }
             } catch (e) {
-                if (status) status.innerText = "Enfoque el Código de Barras o intente capturar nuevamente.";
             } finally {
                 ocrEnCurso = false;
-                if (btn) {
+                if (esManual && btn) {
                     btn.disabled = false;
-                    btn.innerText = "📸 Capturar Reverso Completo DNIe (Lee Fecha Nac + Sexo + Nombres)";
+                    btn.innerText = "📸 Leer 3 Líneas Inferiores Ahora (Fecha Nac + Sexo + Nombres)";
                 }
             }
         }
 
-        function extraerDatosDesdeMRZ(textoRaw) {
+        function extraerDatosDesdeMRZ(textoRaw, dniPreconocido = "") {
             if (!textoRaw) return null;
             const lineas = textoRaw
                 .toUpperCase()
                 .split(/\r?\n/)
                 .map(l => l.replace(/\s+/g, '').trim())
-                .filter(l => l.length >= 10);
+                .filter(l => l.length >= 8);
 
-            let dni = null;
+            let dni = dniPreconocido || null;
             let fechaISO = null;
             let sexo = null;
             let nombres = null;
@@ -1563,7 +1641,7 @@
             const textoUnido = lineas.join("\n");
 
             // Línea 1 MRZ Peruana: I<PER12345678<...
-            const matchPerDni = textoUnido.match(/P\s*E\s*R\s*([0-9OISB]{8})/i);
+            const matchPerDni = textoUnido.match(/P\s*E\s*R\s*[<]*([0-9OISB]{8})/i);
             if (matchPerDni) {
                 dni = matchPerDni[1]
                     .replace(/O/g, '0')
@@ -1576,29 +1654,31 @@
                 if (m8) dni = m8[1];
             }
 
-            // Línea 2 MRZ Peruana: YYMMDD + check + M/F + YYMMDD + PER
+            // Línea 2 MRZ Peruana: YYMMDD + dígito control + M/F + YYMMDD (caducidad)
             for (const l of lineas) {
-                const mL2 = l.match(/([0-9OISB]{6})[0-9OISB<]([MF])([0-9OISB]{6})/);
+                const mL2 = l.match(/([0-9OISB]{6})[0-9OISB<A-Z]([MF])([0-9OISB]{4,6})/);
                 if (mL2) {
                     const fecRaw = mL2[1].replace(/O/g, '0').replace(/I/g, '1').replace(/S/g, '5').replace(/B/g, '8');
-                    const yy = parseInt(fecRaw.slice(0, 2), 10);
-                    const mm = fecRaw.slice(2, 4);
-                    const dd = fecRaw.slice(4, 6);
-                    const mesNum = parseInt(mm, 10);
-                    const diaNum = parseInt(dd, 10);
-                    if (mesNum >= 1 && mesNum <= 12 && diaNum >= 1 && diaNum <= 31) {
-                        const anioActualCorto = new Date().getFullYear() % 100;
-                        const anio = yy > anioActualCorto ? (1900 + yy) : (2000 + yy);
-                        fechaISO = `${anio}-${mm}-${dd}`;
-                        sexo = mL2[2];
-                        break;
+                    if (/^\d{6}$/.test(fecRaw)) {
+                        const yy = parseInt(fecRaw.slice(0, 2), 10);
+                        const mm = fecRaw.slice(2, 4);
+                        const dd = fecRaw.slice(4, 6);
+                        const mesNum = parseInt(mm, 10);
+                        const diaNum = parseInt(dd, 10);
+                        if (mesNum >= 1 && mesNum <= 12 && diaNum >= 1 && diaNum <= 31) {
+                            const anioActualCorto = new Date().getFullYear() % 100;
+                            const anio = yy > anioActualCorto ? (1900 + yy) : (2000 + yy);
+                            fechaISO = `${anio}-${mm}-${dd}`;
+                            sexo = mL2[2];
+                            break;
+                        }
                     }
                 }
             }
 
             // Línea 3 MRZ Peruana: APELLIDO1<APELLIDO2<<NOMBRE1<NOMBRE2<<<<
             for (const l of lineas) {
-                if (l.includes("<<") && /^[A-Z<]+$/.test(l.replace(/[0-9]/g, '')) && !l.startsWith("I<PER") && !l.includes("PER<<")) {
+                if (l.includes("<<") && !l.startsWith("I<PER") && !l.includes("PER<<")) {
                     const limpioNom = l
                         .replace(/0/g, 'O')
                         .replace(/<<+/g, ' ')
@@ -1606,7 +1686,7 @@
                         .replace(/[^A-ZÑ\s]/g, '')
                         .replace(/\s+/g, ' ')
                         .trim();
-                    if (limpioNom.length >= 5) {
+                    if (limpioNom.length >= 5 && limpioNom.includes(" ")) {
                         nombres = limpioNom;
                     }
                 }
@@ -1771,6 +1851,7 @@
                 // 1. Padrón Local en el dispositivo
                 if (padronPacientes[limpio] && padronPacientes[limpio].nombres) {
                     cargarDatosDePadron(limpio, opciones);
+                    actualizarPanelProgresoEscaner();
                     mostrarNotificacion(`✨ Paciente cargado del Padrón Local`, "success");
                     return;
                 }
@@ -1785,6 +1866,7 @@
                         } catch (e) {}
                         cargarDatosDePadron(limpio, opciones);
                         actualizarContadorPadron();
+                        actualizarPanelProgresoEscaner();
                         mostrarNotificacion(`☁️ Paciente cargado del Padrón en Firestore`, "success");
                         return;
                     }
@@ -1805,9 +1887,12 @@
                                 document.getElementById('selSexo').value = infoReniec.sexoInferido;
                             }
                             actualizarPadronEnVivo();
+                            actualizarPanelProgresoEscaner();
                             if (!document.getElementById('txtFechaNac').value) {
-                                document.getElementById('txtFechaNac').focus();
-                                mostrarNotificacion(`✅ ${infoReniec.nombres} — Ingrese Fecha de Nac.`, "success");
+                                if (document.getElementById('scannerModal').style.display === 'none') {
+                                    document.getElementById('txtFechaNac').focus();
+                                }
+                                mostrarNotificacion(`✅ ${infoReniec.nombres} — Enfoque las 3 líneas inferiores (I<PER) para Fecha Nac.`, "success");
                             } else {
                                 mostrarNotificacion(`✅ Paciente identificado: ${infoReniec.nombres}`, "success");
                             }
@@ -1951,6 +2036,10 @@
             if (nativeDetectorTimer) {
                 clearInterval(nativeDetectorTimer);
                 nativeDetectorTimer = null;
+            }
+            if (autoMRZTimer) {
+                clearInterval(autoMRZTimer);
+                autoMRZTimer = null;
             }
             try {
                 if (codeReader) codeReader.reset();

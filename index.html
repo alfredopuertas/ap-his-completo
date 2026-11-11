@@ -452,6 +452,21 @@
         .tab-content.active { display: block; }
 
         #areaImpresionHIS { display: none; }
+        .hoja-fisica-preview-box {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #1C1C1E;
+            border-radius: 12px;
+            padding: 12px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            font-family: Arial, sans-serif;
+        }
+        .hoja-fisica-preview-box .print-sheet {
+            min-width: 920px;
+            font-size: 9.5px;
+        }
         @media print {
             @page { size: A4 landscape; margin: 6mm; }
             body * { visibility: hidden; }
@@ -680,8 +695,8 @@
                     <span class="badge" id="badgeCandado">🔒 Rol Fijo</span>
                 </div>
 
-                <label class="field-label">1. Profesión Asignada:</label>
-                <div class="prof-grid" id="profGrid"></div>
+                <label class="field-label">1. Elegir:</label>
+                <select id="selProfesion" onchange="intentarCambiarProfesion(this.value)"></select>
 
                 <label class="field-label">2. Programa o Categoría (<span id="countProg">0</span> disponibles):</label>
                 <select id="selPrograma" onchange="cargarSubcategorias()"></select>
@@ -708,24 +723,30 @@
             </div>
         </div>
 
-        <!-- PESTAÑA 2: CONSOLIDADO Y ESTADÍSTICAS CON FILIACIÓN -->
+        <!-- PESTAÑA 2: CONSOLIDADO Y HOJA FÍSICA HIS EN PANTALLA -->
         <div id="tab-consolidado" class="tab-content">
             <div class="card">
                 <div class="card-title">
-                    <span>Hoja Diaria HIS, Padrón y Estadísticas</span>
+                    <span>📋 Hoja Física HIS en Vivo y Estadísticas</span>
                     <button onclick="imprimirHojaHISOficial()" style="width:auto; padding:8px 14px; font-size:13.5px; background:#1C1C1E;">🖨️ Imprimir PDF Oficial</button>
                 </div>
+
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Vista exacta de la <b>Hoja HIS Oficial del MINSA</b> con todas las atenciones grabadas (deslice horizontalmente si está en celular):</p>
+                <div id="vistaPreviaHojaHISFisica" class="hoja-fisica-preview-box"></div>
+
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">Filtrar Profesión:</label>
+                        <label class="field-label">Filtrar Área / Servicio:</label>
                         <select id="filtroProfEstadistica" onchange="renderConsolidado()">
-                            <option value="TODOS">Todas las Profesiones</option>
+                            <option value="TODOS">Todos los Servicios</option>
                             <option value="Enfermería">Enfermería</option>
                             <option value="Medicina">Medicina</option>
+                            <option value="Salud Mental">Salud Mental</option>
+                            <option value="Nutrición">Nutrición</option>
                             <option value="Obstetricia">Obstetricia</option>
                             <option value="Odontología">Odontología</option>
+                            <option value="Técnica de Enfermería">Técnica de Enfermería</option>
                             <option value="Psicología / Trabajo Social">Psicología / T. Social</option>
-                            <option value="Nutrición">Nutrición</option>
                         </select>
                     </div>
                     <div>
@@ -733,7 +754,7 @@
                         <select id="filtroAgrupacion" onchange="renderConsolidado()">
                             <option value="programa">Programa Sanitario</option>
                             <option value="nombre_paquete">Paquete / Control</option>
-                            <option value="profesionalNom">Profesional</option>
+                            <option value="profesionalNom">Responsable</option>
                             <option value="dni_paciente">Por Paciente (DNI + Nombres)</option>
                             <option value="distrito">Distrito Procedencia</option>
                             <option value="fecha">Fecha de Atención</option>
@@ -768,11 +789,11 @@
 
                 <hr style="margin: 14px 0; border: 0.5px solid var(--border-color);">
 
-                <div class="card-title"><span>👥 Lista Blanca de Profesionales Autorizados</span></div>
+                <div class="card-title"><span>👥 Lista Blanca de Personal Autorizado</span></div>
                 <div id="listaUsuariosAutorizados" style="font-size:14px; margin-bottom:12px;"></div>
 
                 <div id="formNuevoUsuarioAdmin" style="display:none; background:var(--input-bg); padding:14px; border-radius:14px;">
-                    <label class="field-label">Autorizar Nuevo Profesional:</label>
+                    <label class="field-label">Autorizar Nuevo Usuario:</label>
                     <div class="grid-2">
                         <input type="text" id="nuevoUserDni" placeholder="DNI (8 dígitos)" maxlength="8" style="background:#fff;">
                         <input type="text" id="nuevoUserPin" placeholder="PIN Personal" style="background:#fff;">
@@ -782,10 +803,12 @@
                         <select id="nuevoUserProf" style="background:#fff;">
                             <option value="Enfermería">Enfermería</option>
                             <option value="Medicina">Medicina</option>
+                            <option value="Salud Mental">Salud Mental</option>
+                            <option value="Nutrición">Nutrición</option>
                             <option value="Obstetricia">Obstetricia</option>
                             <option value="Odontología">Odontología</option>
+                            <option value="Técnica de Enfermería">Técnica de Enfermería</option>
                             <option value="Psicología / Trabajo Social">Psicología / T. Social</option>
-                            <option value="Nutrición">Nutrición</option>
                         </select>
                     </div>
                     <button onclick="agregarUsuarioAutorizado()" class="admin">➕ Autorizar Usuario</button>
@@ -886,6 +909,15 @@
             <input type="password" id="txtPinAdmin" placeholder="Clave Maestra (2026)" style="text-align: center; font-size: 20px; letter-spacing: 4px;">
             <button onclick="verificarPinAdmin()" class="admin" style="margin-bottom: 10px;">Desbloquear Todo</button>
             <button onclick="cerrarModalAdmin()" class="secondary">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="guardadoExitoModal" class="modal-overlay" onclick="cerrarModalExitoGuardado()">
+        <div class="modal-box" style="max-width: 390px; border: 3px solid var(--success);" onclick="event.stopPropagation()">
+            <div style="font-size: 46px; line-height: 1; margin-bottom: 8px;">✅</div>
+            <h3 style="color: #0E6027; font-size: 20px; margin-bottom: 6px;">¡Se guardó la información!</h3>
+            <p id="lblDetalleGuardadoExito" style="font-size: 14px; color: var(--text-main); margin-bottom: 14px; line-height: 1.45;"></p>
+            <button onclick="cerrarModalExitoGuardado()" class="success" style="padding: 12px; font-size: 15px;">👤 Ingresar Nuevo Paciente</button>
         </div>
     </div>
 
@@ -1085,9 +1117,9 @@
             return req;
         }
 
-        // Lector automático en tiempo real desde Super_Tabla_Maestra (sin depender de Python)
+        // Lector automático en tiempo real desde Super_Tabla_Maestra (usando /export?format=csv que conserva 100% los códigos alfanuméricos como I10, E11.9, Z00.1, PC)
         window.cargarDirectoDesdeSuperTablaMaestra = async function() {
-            const urlCatalogoCSV = `https://docs.google.com/spreadsheets/d/${ID_SUPER_TABLA_MAESTRA}/gviz/tq?tqx=out:csv&sheet=1_Catalogo_Maestro_HIS&t=${Date.now()}`;
+            const urlCatalogoCSV = `https://docs.google.com/spreadsheets/d/${ID_SUPER_TABLA_MAESTRA}/export?format=csv&gid=1997137806&t=${Date.now()}`;
             try {
                 const resp = await fetch(urlCatalogoCSV, { cache: "no-store" });
                 if (!resp.ok) return false;
@@ -1124,14 +1156,22 @@
                     const sub = (r[idxSub] || "").trim();
                     const nom = (r[idxNom] || "").trim();
                     const ordStr = (r[idxOrd] || "").trim();
-                    const desc = (r[idxDesc] || "").trim();
+                    let desc = (r[idxDesc] || "").trim();
                     let dx = ((r[idxDx] || "D").trim().toUpperCase().split("/")[0] || "D").trim();
                     const lab = (r[idxLab] || "").trim();
-                    const cod = (r[idxCod] || "").trim();
+                    let cod = (r[idxCod] || "").trim();
                     const inst = idxInst >= 0 ? (r[idxInst] || "").trim() : "";
                     const obligStr = idxOblig >= 0 ? (r[idxOblig] || "").trim().toUpperCase() : "";
 
                     if (!prof && !cat && !sub && !nom && !desc && !cod) continue;
+
+                    // Si en alguna fila el código CIE-10/CPT se escribió al final de la descripción y la celda codigo_cie_cpt quedó vacía, extraerlo automáticamente
+                    if (!cod && desc) {
+                        const matchFinal = desc.match(/[\s\-\(\:]+([A-Z]\d{2,3}(?:\.\d{1,2}|X)?|\d{5}(?:\.\d{1,2})?)\)?\s*$/i);
+                        if (matchFinal) {
+                            cod = matchFinal[1].toUpperCase();
+                        }
+                    }
 
                     const orden = parseInt(ordStr, 10) || 0;
                     const clave = `${prof}|${cat}|${sub}|${nom}`;
@@ -1222,7 +1262,16 @@
         }
 
         let catalogoMaestro = window.CATALOGO_PAQUETES_OFICIAL || [];
-        const listaProfesiones = ["Enfermería", "Medicina", "Obstetricia", "Odontología", "Psicología / Trabajo Social", "Nutrición"];
+        const listaProfesiones = [
+            "Enfermería",
+            "Medicina",
+            "Salud Mental",
+            "Nutrición",
+            "Obstetricia",
+            "Odontología",
+            "Técnica de Enfermería",
+            "Psicología / Trabajo Social"
+        ];
 
         let toastTimeout = null;
         function mostrarNotificacion(msj, tipo = "normal") {
@@ -1240,6 +1289,7 @@
         window.actualizarCatalogoEnCaliente = function(nuevosPaquetes) {
             if (!Array.isArray(nuevosPaquetes) || nuevosPaquetes.length === 0) return;
             catalogoMaestro = nuevosPaquetes;
+            renderizarBotonesProfesion();
             cargarProgramas();
         };
 
@@ -2059,25 +2109,40 @@
         }
 
         function renderizarBotonesProfesion() {
-            const grid = document.getElementById("profGrid");
-            if (!grid) return;
-            grid.innerHTML = listaProfesiones.map(p => {
-                const bloqueado = !esAdmin && perfilFijo && (p !== perfilFijo);
-                const sel = (p === profesionActiva);
-                return `<div class="prof-btn ${sel ? 'selected' : ''} ${bloqueado ? 'locked' : ''}" onclick="intentarCambiarProfesion('${p}')">${bloqueado ? '🔒 ' : '✅ '}${p.split(" ")[0]}</div>`;
-            }).join('');
-            document.getElementById("lblModoUsuario").innerText = esAdmin ? `🔓 ADMIN MAESTRO (${nombreProfesional})` : `${nombreProfesional} — ${profesionActiva}`;
-            document.getElementById("badgeCandado").innerText = esAdmin ? "🔓 Admin Total" : "🔒 Rol Fijo";
+            // Unir lista base + cualquier profesión/servicio nuevo creado en Super_Tabla_Maestra
+            const profsEnCatalogo = Array.isArray(catalogoMaestro)
+                ? [...new Set(catalogoMaestro.map(i => (i.prof || "").trim()).filter(Boolean))]
+                : [];
+            const todasLasProfs = [...new Set([...listaProfesiones, ...profsEnCatalogo])];
+
+            const sel = document.getElementById("selProfesion");
+            if (sel) {
+                sel.innerHTML = todasLasProfs.map(p => {
+                    const cantPaq = Array.isArray(catalogoMaestro)
+                        ? catalogoMaestro.filter(i => i.prof === p || i.universal).length
+                        : 0;
+                    const seleccionado = (p === profesionActiva) ? "selected" : "";
+                    return `<option value="${p}" ${seleccionado}>📋 ${p} (${cantPaq} paquetes)</option>`;
+                }).join('');
+                sel.value = profesionActiva;
+            }
+
+            const lblModo = document.getElementById("lblModoUsuario");
+            if (lblModo) {
+                lblModo.innerText = esAdmin ? `🔓 ADMIN MAESTRO (${nombreProfesional})` : `${nombreProfesional} — ${profesionActiva}`;
+            }
+            const bCandado = document.getElementById("badgeCandado");
+            if (bCandado) {
+                bCandado.innerText = esAdmin ? "🔓 Menú Libre" : "📋 Menú Activo";
+            }
         }
 
         function intentarCambiarProfesion(prof) {
-            if (!esAdmin && perfilFijo && prof !== perfilFijo) {
-                mostrarNotificacion(`🔒 Solo tiene autorizado el perfil de ${perfilFijo}`, "error");
-                return;
-            }
+            if (!prof) return;
             profesionActiva = prof;
             renderizarBotonesProfesion();
             cargarProgramas();
+            mostrarNotificacion(`📋 Servicio seleccionado: ${prof}`);
         }
 
         function cargarProgramas() {
@@ -2478,29 +2543,36 @@
 
             // Borrar toda la hoja actual, subir al inicio y mostrar 'Ingresar nuevo paciente'
             limpiarFormularioPaciente();
-            mostrarNotificacion(`✅ Guardado — 👤 Ingresar nuevo paciente`, "success");
+            renderConsolidado();
+            mostrarModalExitoGuardado(reg, atencionesLocal.length);
+            mostrarNotificacion(`✅ ¡Se guardó la información! — Atención #${atencionesLocal.length}`, "success");
         }
 
-        // ==================== IMPRESIÓN HOJA HIS CON GUIONES DESPUÉS DE LÍNEA 3 ====================
-        function imprimirHojaHISOficial() {
-            if (atencionesLocal.length === 0) {
-                mostrarNotificacion("Guarde al menos 1 atención antes de imprimir", "error");
-                return;
+        function mostrarModalExitoGuardado(reg, numAtencion) {
+            const modal = document.getElementById("guardadoExitoModal");
+            const lbl = document.getElementById("lblDetalleGuardadoExito");
+            if (lbl && reg) {
+                lbl.innerHTML = `
+                    <b>Atención #${numAtencion} grabada en la Hoja HIS</b><br>
+                    👤 <b>Paciente:</b> ${reg.nombres_paciente} (DNI: ${reg.dni_paciente})<br>
+                    📦 <b>Paquete:</b> ${reg.nombre_paquete} (${reg.lineasCount} líneas)<br>
+                    <span style="font-size:12px; color:var(--text-secondary);">Ya puede verla rellenada en la pestaña <b>Hoja / Estadísticas</b>.</span>
+                `;
             }
-            const hoy = new Date();
-            document.getElementById("prLote").innerHTML = "&nbsp;";
-            document.getElementById("prPagina").innerHTML = "1";
-            document.getElementById("prAnio").innerText = hoy.getFullYear();
-            document.getElementById("prMes").innerText = String(hoy.getMonth() + 1).padStart(2, '0');
-            document.getElementById("prIpress").innerText = document.getElementById("hisIpress").value;
-            document.getElementById("prUpss").innerText = document.getElementById("hisUpss").value;
-            document.getElementById("prDniResp").innerText = dniProfesionalActivo;
-            document.getElementById("prNomResp").innerText = nombreProfesional;
+            if (modal) modal.style.display = "flex";
+        }
 
-            const tbody = document.getElementById("printBodyRows");
+        function cerrarModalExitoGuardado() {
+            const modal = document.getElementById("guardadoExitoModal");
+            if (modal) modal.style.display = "none";
+            const inputDni = document.getElementById("txtDni");
+            if (inputDni) inputDni.focus();
+        }
+
+        // ==================== GENERADOR DE FILAS Y VISTA FÍSICA HOJA HIS MINSA ====================
+        function generarFilasTablaHojaHIS(listaAtenciones) {
             let numeroOrdenCasillero = 0;
-
-            tbody.innerHTML = atencionesLocal.map((at) => {
+            return listaAtenciones.map((at) => {
                 const lineas = at.lineasDetalle || [];
                 const nFilas = Math.ceil(Math.max(lineas.length, 3) / 3) * 3;
                 let htmlBloque = "";
@@ -2574,6 +2646,97 @@
                 }
                 return htmlBloque;
             }).join('');
+        }
+
+        function generarHTMLHojaHISCompleta(listaAtenciones) {
+            const hoy = new Date();
+            const anio = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const ipress = document.getElementById("hisIpress")?.value || "C.S. CHILCA";
+            const upss = document.getElementById("hisUpss")?.value || "CONSULTA EXTERNA";
+            const filasHTML = listaAtenciones.length > 0
+                ? generarFilasTablaHojaHIS(listaAtenciones)
+                : `<tr><td colspan="19" style="padding:18px; text-align:center; color:#666; font-size:12px;">Aún no hay atenciones grabadas en esta hoja. Registre un paciente en la pestaña <b>📋 Registro HIS</b> y presione <b>💾 Guardar Atención HIS</b> para ver la Hoja HIS física rellenada aquí en vivo.</td></tr>`;
+
+            return `
+                <div style="text-align:center; margin-bottom:5px; color:#000; font-family: Arial, Helvetica, sans-serif;">
+                    <div style="font-size:13px; font-weight:bold; letter-spacing:0.5px;">MINISTERIO DE SALUD — OFICINA GENERAL DE TECNOLOGÍAS DE LA INFORMACIÓN</div>
+                    <div style="font-size:11.5px; margin-top:2px;">Registro Diario de Atención y Otras Actividades de Salud (FORMATO OFICIAL HIS MINSA)</div>
+                </div>
+                <table class="print-sheet" style="margin-bottom:4px;">
+                    <tr>
+                        <th style="width:6%;">LOTE</th>
+                        <th style="width:6%;">PÁGINA</th>
+                        <th style="width:6%;">AÑO</th>
+                        <th style="width:7%;">MES</th>
+                        <th style="width:28%;">NOMBRE DE ESTABLECIMIENTO DE SALUD (IPRESS)</th>
+                        <th style="width:20%;">UNIDAD PRODUCTORA DE SERVICIOS (UPSS)</th>
+                        <th style="width:8%;">DNI</th>
+                        <th style="width:19%;">NOMBRE DEL RESPONSABLE DE LA ATENCIÓN</th>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>1</td>
+                        <td><b>${anio}</b></td>
+                        <td><b>${mes}</b></td>
+                        <td><b>${ipress}</b></td>
+                        <td><b>${upss}</b></td>
+                        <td><b>${dniProfesionalActivo || ''}</b></td>
+                        <td><b>${nombreProfesional || ''}</b></td>
+                    </tr>
+                </table>
+                <table class="print-sheet">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width:2.5%;">N°</th>
+                            <th rowspan="2" style="width:3%;">DÍA</th>
+                            <th style="width:9%;">D.N.I.</th>
+                            <th style="width:4%;">FINANC.</th>
+                            <th style="width:10%;">DISTRITO DE PROCEDENCIA</th>
+                            <th rowspan="2" style="width:5.5%;">EDAD</th>
+                            <th rowspan="2" style="width:3%;">SEXO</th>
+                            <th style="width:4.5%;">PC / Pab</th>
+                            <th style="width:6%;">EVALUACIÓN ANTROPOM.</th>
+                            <th rowspan="2" style="width:3%;">ESTAB</th>
+                            <th rowspan="2" style="width:3%;">SERV</th>
+                            <th rowspan="2" style="width:25%;">DIAGNÓSTICO MOTIVO DE CONSULTA Y/O ACTIVIDAD DE SALUD</th>
+                            <th colspan="3" style="width:5.5%;">TIPO DX</th>
+                            <th colspan="3" style="width:8%;">VALOR LAB</th>
+                            <th rowspan="2" style="width:8%;">CÓDIGO CIE / CPT</th>
+                        </tr>
+                        <tr>
+                            <th>HIST. CLÍNICA / GEST.</th>
+                            <th>ETNIA</th>
+                            <th>CENTRO POBLADO</th>
+                            <th>Cm</th>
+                            <th>PESO / TALLA / Hb</th>
+                            <th>P</th><th>D</th><th>R</th>
+                            <th>1°</th><th>2°</th><th>3°</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filasHTML}</tbody>
+                </table>
+            `;
+        }
+
+        // ==================== IMPRESIÓN HOJA HIS CON GUIONES DESPUÉS DE LÍNEA 3 ====================
+        function imprimirHojaHISOficial() {
+            if (atencionesLocal.length === 0) {
+                mostrarNotificacion("Guarde al menos 1 atención antes de imprimir", "error");
+                return;
+            }
+            const hoy = new Date();
+            document.getElementById("prLote").innerHTML = "&nbsp;";
+            document.getElementById("prPagina").innerHTML = "1";
+            document.getElementById("prAnio").innerText = hoy.getFullYear();
+            document.getElementById("prMes").innerText = String(hoy.getMonth() + 1).padStart(2, '0');
+            document.getElementById("prIpress").innerText = document.getElementById("hisIpress").value;
+            document.getElementById("prUpss").innerText = document.getElementById("hisUpss").value;
+            document.getElementById("prDniResp").innerText = dniProfesionalActivo;
+            document.getElementById("prNomResp").innerText = nombreProfesional;
+
+            const tbody = document.getElementById("printBodyRows");
+            tbody.innerHTML = generarFilasTablaHojaHIS(atencionesLocal);
 
             window.print();
         }
@@ -2719,12 +2882,20 @@
         }
 
         function renderConsolidado() {
-            const filtroProf = document.getElementById("filtroProfEstadistica").value;
-            const crit = document.getElementById("filtroAgrupacion").value;
+            const filtroProf = document.getElementById("filtroProfEstadistica")?.value || "TODOS";
+            const crit = document.getElementById("filtroAgrupacion")?.value || "programa";
             let lista = atencionesLocal;
-            if (!esAdmin && perfilFijo) lista = lista.filter(a => a.profesion === perfilFijo);
-            else if (filtroProf !== "TODOS") lista = lista.filter(a => a.profesion === filtroProf);
+            if (filtroProf !== "TODOS") {
+                lista = lista.filter(a => a.profesion === filtroProf);
+            }
 
+            // 1. Renderizar la Hoja HIS física oficial en vivo tal y como se grabó en Registro HIS
+            const divHojaFisica = document.getElementById("vistaPreviaHojaHISFisica");
+            if (divHojaFisica) {
+                divHojaFisica.innerHTML = generarHTMLHojaHISCompleta(lista);
+            }
+
+            // 2. Renderizar estadísticas y conteo
             const conteo = {};
             lista.forEach(i => {
                 let k = i[crit] || "Otros";
@@ -2735,18 +2906,29 @@
             });
             const divG = document.getElementById("graficoBarras");
             const claves = Object.keys(conteo);
-            divG.innerHTML = claves.length === 0
-                ? "Sin atenciones registradas en esta vista."
-                : claves.map(k => `<div style="margin-bottom:4px;"><b>${k}:</b> ${conteo[k]} atenciones</div>`).join('');
+            if (divG) {
+                divG.innerHTML = claves.length === 0
+                    ? "Sin atenciones registradas en esta vista."
+                    : claves.map(k => `<div style="margin-bottom:4px;"><b>${k}:</b> ${conteo[k]} atenciones</div>`).join('');
+            }
 
+            // 3. Renderizar tarjetas resumen con detalle de líneas grabadas
             const cont = document.getElementById("listaConsolidado");
-            cont.innerHTML = lista.map((a, i) => `
-                <div style="background:var(--input-bg); padding:12px; border-radius:12px; margin-bottom:8px;">
-                    <b>#${i+1} | Día ${a.dia} | DNI: ${a.dni_paciente} (HC: ${a.historia_clinica || a.dni_paciente}) — ${a.nombres_paciente}</b><br>
-                    <span>F.Nac: ${a.fecha_nac || '-'} | Edad: <b>${a.edad_valor}</b> | Sexo: <b>${a.sexo}</b> | Financ: ${a.financiador} | Dist: ${a.distrito}</span><br>
-                    <span>Paquete: <b>${a.nombre_paquete}</b> (${a.lineasCount} líneas) | Prof: ${a.profesionalNom} (${a.profesion})</span>
-                </div>
-            `).join('');
+            if (cont) {
+                cont.innerHTML = lista.map((a, i) => {
+                    const resumenLineas = (a.lineasDetalle || []).map((l, idx) =>
+                        `<span style="display:inline-block; background:#fff; border:1px solid #d1d1d6; border-radius:6px; padding:2px 6px; margin:2px 4px 2px 0; font-size:11.5px;"><b>${idx+1}.</b> ${l.desc} — <b>${l.dx}</b> ${l.lab1 ? `[LAB:${l.lab1}]` : ''} <b style="color:var(--primary);">${l.cod || ''}</b></span>`
+                    ).join('');
+                    return `
+                        <div style="background:var(--input-bg); padding:12px; border-radius:12px; margin-bottom:8px;">
+                            <b>#${i+1} | Día ${a.dia} | DNI: ${a.dni_paciente} (HC: ${a.historia_clinica || a.dni_paciente}) — ${a.nombres_paciente}</b><br>
+                            <span>F.Nac: ${a.fecha_nac || '-'} | Edad: <b>${a.edad_valor}</b> | Sexo: <b>${a.sexo}</b> | Financ: ${a.financiador} | Dist: ${a.distrito} | Estab/Serv: <b>${a.cond_estab}/${a.cond_serv}</b></span><br>
+                            <span>Paquete: <b>${a.nombre_paquete}</b> (${a.lineasCount} líneas) | Servicio: <b>${a.profesion}</b> (${a.profesionalNom})</span>
+                            <div style="margin-top:6px;">${resumenLineas}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         function limpiarHojaDelDia() {

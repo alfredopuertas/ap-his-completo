@@ -3926,5 +3926,417 @@ window.CATALOGO_PAQUETES_OFICIAL = [
         "inst": ""
       }
     ]
+  },
+  {
+    "codigo": "PAQ-068",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje de Violencia",
+    "sub": "Tamizaje de Violencia Negativo",
+    "sec": "Paquete #68",
+    "nombre": "Tamizaje de Violencia Negativo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje en Violencia",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "98150.01",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-069",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje de Violencia",
+    "sub": "Tamizaje de Violencia Positivo",
+    "sec": "Paquete #69",
+    "nombre": "Tamizaje de Violencia Positivo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje en violencia",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.01",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Problemas relacionados Violencia",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "R456",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-070",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje en Alcohol y Drogas",
+    "sub": "Tamizaje en Alcohol y Drogas Negativo",
+    "sec": "Paquete #70",
+    "nombre": "Tamizaje en Alcohol y Drogas Negativo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje en Alcohol y Drogas",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.02",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-071",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje en Alcohol y Drogas",
+    "sub": "Tamizaje en Alcohol Positivo",
+    "sec": "Paquete #71",
+    "nombre": "Tamizaje en Alcohol Positivo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje en Alcohol y Drogas",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.02",
+        "inst": "Derivación al C.S. Mental Comunitario"
+      },
+      {
+        "orden": 2,
+        "desc": "Problemas relacionados al alcohol",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "Z721",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-072",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje en Alcohol y Drogas",
+    "sub": "Tamizaje en Drogas Positivo",
+    "sec": "Paquete #72",
+    "nombre": "Tamizaje en Drogas Positivo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje en Alcohol y Drogas",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.02",
+        "inst": "Derivación al C.S. Mental Comunitario"
+      },
+      {
+        "orden": 2,
+        "desc": "Problemas relacionados a Drogas",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "Z722",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-073",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje Depresión-Ansiedad-Suicidio",
+    "sub": "Tamizaje Depresión-Ansiedad-Suicidio:Negativo",
+    "sec": "Paquete #73",
+    "nombre": "Tamizaje Depresión-Ansiedad-Suicidio:Negativo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje Transtorno Depresivo",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.03",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-074",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje Depresión-Ansiedad-Suicidio",
+    "sub": "Tamizaje Depresión-Ansiedad-Suicidio: Positivo",
+    "sec": "Paquete #74",
+    "nombre": "Tamizaje Depresión-Ansiedad-Suicidio: Positivo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje Transtorno Depresivo",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.03",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Pesquiza Salud Mental",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "Z133",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-075",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje detección Deterioro en > 60 años",
+    "sub": "Tamizaje detección Deterioro en > 60 años: Negativo",
+    "sec": "Paquete #75",
+    "nombre": "Tamizaje detección Deterioro en > 60 años: Negativo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje deterioro cognitivo",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.07",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-076",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje detección Deterioro en > 60 años",
+    "sub": "Tamizaje detección Deterioro en > 60 años: Positivo",
+    "sec": "Paquete #76",
+    "nombre": "Tamizaje detección Deterioro en > 60 años: Positivo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje deterioro cognitivo",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.07",
+        "inst": "Derivar a Hospital rezola-Cañete"
+      },
+      {
+        "orden": 2,
+        "desc": "Pesquiza Salud Mental",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "Z133",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-077",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje Transtorno Mental y del Comportamiento",
+    "sub": "Tamizaje Transt.mental y Comportam. en Niños y Adolesc: Negativo",
+    "sec": "Paquete #77",
+    "nombre": "Tamizaje Transt.mental y Comportam. en Niños y Adolesc: Negativo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje transtornos del comportamiento",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.08",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-078",
+    "prof": "Salud Mental",
+    "universal": false,
+    "prog": "Tamizaje Transtorno Mental y del Comportamiento",
+    "sub": "Tamizaje Transt.mental y Comportam. en Niños y Adolesc: Positivo",
+    "sec": "Paquete #78",
+    "nombre": "Tamizaje Transt.mental y Comportam. en Niños y Adolesc: Positivo",
+    "obligatorios": [],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "Tamizaje transtornos del comportamiento",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "96150.08",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "Pesquiza Salud Mental",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "Z133",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "Consejeria prevencion de Riesgos",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "99402.09",
+        "inst": ""
+      }
+    ]
   }
 ];

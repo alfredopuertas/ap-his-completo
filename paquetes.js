@@ -4338,5 +4338,95 @@ window.CATALOGO_PAQUETES_OFICIAL = [
         "inst": ""
       }
     ]
+  },
+  {
+    "codigo": "PAQ-079",
+    "prof": "Medicina",
+    "universal": false,
+    "prog": "Medicina - Asistencial",
+    "sub": "Consultorio",
+    "sec": "Paquete #79",
+    "nombre": "Atención Médica en Consultorio (CIE-10 Libre)",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "",
+        "inst": ""
+      }
+    ]
+  },
+  {
+    "codigo": "PAQ-080",
+    "prof": "Medicina",
+    "universal": false,
+    "prog": "Medicina - Asistencial",
+    "sub": "Emergencia",
+    "sec": "Paquete #80",
+    "nombre": "Atención de Emergencia / Tópico (CIE-10 Libre)",
+    "obligatorios": [
+      "PESO",
+      "TALLA"
+    ],
+    "lineas": [
+      {
+        "orden": 1,
+        "desc": "",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "",
+        "inst": ""
+      },
+      {
+        "orden": 2,
+        "desc": "",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "",
+        "inst": ""
+      },
+      {
+        "orden": 3,
+        "desc": "",
+        "dx": "D",
+        "lab1": "",
+        "lab2": "",
+        "lab3": "",
+        "cod": "",
+        "inst": ""
+      }
+    ]
   }
 ];

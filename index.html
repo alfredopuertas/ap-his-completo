@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="paquetes.js"></script>
+    <script src="cie10_his.js"></script>
     <style>
         :root {
             --bg-apple: #F2F2F7;
@@ -477,6 +478,46 @@
         .print-sheet { width: 100%; border-collapse: collapse; font-size: 8.5px; }
         .print-sheet th, .print-sheet td { border: 1px solid #000; padding: 2.5px 3px; text-align: center; vertical-align: middle; }
         .print-header-title { text-align: center; font-weight: bold; line-height: 1.25; margin-bottom: 4px; }
+
+        /* Autocompletado instantáneo CIE-10 / CPT */
+        .cie10-suggest-list {
+            display: none;
+            background: #ffffff;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 86, 179, 0.18);
+            max-height: 230px;
+            overflow-y: auto;
+            margin-top: 2px;
+            margin-bottom: 8px;
+            z-index: 90;
+            position: relative;
+        }
+        .cie10-suggest-item {
+            padding: 9px 12px;
+            border-bottom: 1px solid #EFEFF4;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            transition: background 0.12s;
+        }
+        .cie10-suggest-item:last-child { border-bottom: none; }
+        .cie10-suggest-item:hover, .cie10-suggest-item:active {
+            background: var(--primary-soft);
+        }
+        .cie10-code-pill {
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            font-size: 12.5px;
+            padding: 3px 8px;
+            border-radius: 7px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -646,11 +687,31 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- SECCIÓN ANTROPOMETRÍA DINÁMICA SEGÚN EL PAQUETE -->
-                <details id="detailsAntropometria" open style="margin-top:8px; background:var(--input-bg); padding:14px; border-radius:14px; border: 1.5px solid var(--border-color);">
+            <!-- SECCIÓN C: SELECCIÓN DE PROGRAMA Y PAQUETE -->
+            <div class="card">
+                <div class="card-title">
+                    <span>C. SELECCIÓN DE PROGRAMA Y PAQUETE</span>
+                    <span class="badge" id="badgeCandado">🔒 Rol Fijo</span>
+                </div>
+
+                <label class="field-label">1. Elegir:</label>
+                <select id="selProfesion" onchange="intentarCambiarProfesion(this.value)"></select>
+
+                <label class="field-label">2. Programa o Categoría (<span id="countProg">0</span> disponibles):</label>
+                <select id="selPrograma" onchange="cargarSubcategorias()"></select>
+
+                <label class="field-label">3. Subcategoría / Etapa o Grupo (<span id="countSub">0</span> subgrupos):</label>
+                <select id="selSubcategoria" onchange="cargarPaquetesCascada()"></select>
+
+                <label class="field-label">4. Control o Paquete Específico (<span id="countPaq">0</span> paquetes):</label>
+                <div id="packageList" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
+
+                <!-- SECCIÓN ANTROPOMETRÍA, HB Y FUM DINÁMICA DEBAJO DEL PAQUETE SELECCIONADO (C.4) -->
+                <details id="detailsAntropometria" open style="margin-top:12px; background:var(--input-bg); padding:14px; border-radius:14px; border: 1.5px solid var(--border-color);">
                     <summary style="font-size:15px; font-weight:800; color:var(--primary-dark); cursor:pointer; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                        <span>📏 Antropometría, Hb y FUR</span>
+                        <span>📏 Antropometría, Hb y FUM</span>
                         <span id="badgeReqAntropo" class="badge active" style="font-size:12px;">Según paquete</span>
                     </summary>
                     <div class="grid-2" style="margin-top:12px;">
@@ -681,31 +742,11 @@
                             <input type="text" id="txtPab" inputmode="decimal" placeholder="Pab (cm)" style="background:#fff; margin-bottom:0;" oninput="limpiarErrorCampo(this)">
                         </div>
                         <div>
-                            <label class="field-label">F. ÚLT. REGLA (FUR) <span id="reqTag_FUR" class="badge req-badge" style="display:none;">★ Oblig.</span></label>
+                            <label class="field-label">F. ÚLT. MENSTR. (FUM) <span id="reqTag_FUR" class="badge req-badge" style="display:none;">★ Oblig.</span></label>
                             <input type="date" id="txtFUR" style="background:#fff; margin-bottom:0;" onchange="limpiarErrorCampo(this)" oninput="limpiarErrorCampo(this)">
                         </div>
                     </div>
                 </details>
-            </div>
-
-            <!-- SECCIÓN C: SELECCIÓN DE PROGRAMA Y PAQUETE -->
-            <div class="card">
-                <div class="card-title">
-                    <span>C. SELECCIÓN DE PROGRAMA Y PAQUETE</span>
-                    <span class="badge" id="badgeCandado">🔒 Rol Fijo</span>
-                </div>
-
-                <label class="field-label">1. Elegir:</label>
-                <select id="selProfesion" onchange="intentarCambiarProfesion(this.value)"></select>
-
-                <label class="field-label">2. Programa o Categoría (<span id="countProg">0</span> disponibles):</label>
-                <select id="selPrograma" onchange="cargarSubcategorias()"></select>
-
-                <label class="field-label">3. Subcategoría / Etapa o Grupo (<span id="countSub">0</span> subgrupos):</label>
-                <select id="selSubcategoria" onchange="cargarPaquetesCascada()"></select>
-
-                <label class="field-label">4. Control o Paquete Específico (<span id="countPaq">0</span> paquetes):</label>
-                <div id="packageList" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
             </div>
 
             <!-- SECCIÓN D: LÍNEAS HIS PRELLENADAS EN 2 FILAS AMPLIAS -->
@@ -714,11 +755,13 @@
                     <span>D. LÍNEAS HIS PRELLENADAS (<span id="lblCountLineas">0</span> líneas)</span>
                     <button onclick="agregarLineaExtra()" class="secondary" style="width:auto; padding:8px 14px; font-size:13.5px;">+ Añadir Línea</button>
                 </div>
+                <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:10px;">
+                    💡 <b>Buscador CIE-10 / CPT integrado:</b> En <b>Medicina - Asistencial</b> (o en cualquier línea), escriba el diagnóstico (ej. <i>faringitis, itu, diarrea, gastritis, lumbago, herida</i>) y elija de la lista para rellenar su <b>CIE-10 automáticamente</b>; luego elija <b>P, D o R</b>.
+                </p>
                 <div id="hisCardsContainer"></div>
 
-                <div class="grid-2" style="margin-top: 16px;">
-                    <button onclick="finalizarAtencion()" class="success">💾 Guardar Atención HIS</button>
-                    <button onclick="imprimirHojaHISOficial()" style="background:#1C1C1E;">🖨️ Imprimir Hoja HIS</button>
+                <div style="margin-top: 16px;">
+                    <button onclick="finalizarAtencion()" class="success" style="font-size: 16.5px; padding: 15px;">💾 Guardar Atención HIS</button>
                 </div>
             </div>
         </div>
@@ -728,7 +771,7 @@
             <div class="card">
                 <div class="card-title">
                     <span>📋 Hoja Física HIS en Vivo y Estadísticas</span>
-                    <button onclick="imprimirHojaHISOficial()" style="width:auto; padding:8px 14px; font-size:13.5px; background:#1C1C1E;">🖨️ Imprimir PDF Oficial</button>
+                    <button onclick="imprimirHojaHISOficial()" style="width:auto; padding:8px 14px; font-size:13.5px; background:#1C1C1E;">🖨️ Imprimir Hoja HIS</button>
                 </div>
 
                 <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Vista exacta de la <b>Hoja HIS Oficial del MINSA</b> con todas las atenciones grabadas (deslice horizontalmente si está en celular):</p>
@@ -1229,7 +1272,48 @@
                     try {
                         localStorage.setItem("aphis_catalogo_cache_sheet", JSON.stringify(paquetesNuevos));
                     } catch (e) {}
+                    if (window.cargarCatalogoCIE10DesdeSheet) {
+                        window.cargarCatalogoCIE10DesdeSheet();
+                    }
                     return paquetesNuevos.length;
+                }
+            } catch (e) {}
+            return false;
+        };
+
+        // Lector en tiempo real de la pestaña '6_Catalogo_CIE10_HIS' (gid=600101010) para autocompletado instantáneo CIE-10 / CPT
+        window.cargarCatalogoCIE10DesdeSheet = async function() {
+            const urlCIE10CSV = `https://docs.google.com/spreadsheets/d/${ID_SUPER_TABLA_MAESTRA}/export?format=csv&gid=600101010&t=${Date.now()}`;
+            try {
+                const resp = await fetch(urlCIE10CSV, { cache: "no-store" });
+                if (!resp.ok) return false;
+                const csvText = await resp.text();
+                if (!csvText || csvText.includes("<!DOCTYPE html>")) return false;
+                const filas = parsearCSVTexto(csvText);
+                if (filas.length < 2) return false;
+                const cab = filas[0].map(h => h.toLowerCase().trim());
+                const iCod = cab.indexOf("codigo_cie_cpt");
+                const iDesc = cab.indexOf("descripcion_his");
+                const iCat = cab.indexOf("categoria_clinica");
+                const iKw = cab.indexOf("palabras_clave_busqueda");
+                if (iCod === -1 || iDesc === -1) return false;
+                const nuevosCIE = [];
+                for (let i = 1; i < filas.length; i++) {
+                    const r = filas[i];
+                    const cod = (r[iCod] || "").trim().toUpperCase();
+                    const desc = (r[iDesc] || "").trim();
+                    if (!cod || !desc) continue;
+                    nuevosCIE.push({
+                        cod: cod,
+                        desc: desc,
+                        cat: iCat >= 0 ? (r[iCat] || "").trim() : "General",
+                        kw: iKw >= 0 ? (r[iKw] || "").trim() : ""
+                    });
+                }
+                if (nuevosCIE.length > 0) {
+                    window.CATALOGO_CIE10_OFICIAL = nuevosCIE;
+                    reconstruirIndiceCIE10EnMemoria();
+                    return nuevosCIE.length;
                 }
             } catch (e) {}
             return false;
@@ -1289,6 +1373,9 @@
         window.actualizarCatalogoEnCaliente = function(nuevosPaquetes) {
             if (!Array.isArray(nuevosPaquetes) || nuevosPaquetes.length === 0) return;
             catalogoMaestro = nuevosPaquetes;
+            if (typeof reconstruirIndiceCIE10EnMemoria === "function") {
+                reconstruirIndiceCIE10EnMemoria();
+            }
             renderizarBotonesProfesion();
             cargarProgramas();
         };
@@ -2212,9 +2299,12 @@
                 "PAB": "txtPab",
                 "FUR": "txtFUR"
             };
-            const reqs = (paqueteSeleccionado && Array.isArray(paqueteSeleccionado.obligatorios))
+            const reqsRaw = (paqueteSeleccionado && Array.isArray(paqueteSeleccionado.obligatorios))
                 ? paqueteSeleccionado.obligatorios
                 : [];
+            // Normalizar FUR / FUM para que cualquiera de los dos active el campo FUM
+            const reqs = reqsRaw.map(r => r === "FUM" ? "FUR" : r);
+            const reqsMostrar = reqsRaw.map(r => r === "FUR" ? "FUM" : r);
 
             Object.keys(mapaCampos).forEach(cod => {
                 const tag = document.getElementById("reqTag_" + cod);
@@ -2226,7 +2316,7 @@
 
             const badge = document.getElementById("badgeReqAntropo");
             if (badge) {
-                badge.innerText = reqs.length > 0 ? `⚡ Obligatorio: ${reqs.join(", ")}` : "Opcional en este paquete";
+                badge.innerText = reqsMostrar.length > 0 ? `⚡ Obligatorio: ${reqsMostrar.join(", ")}` : "Opcional en este paquete";
             }
             if (reqs.length > 0) {
                 const det = document.getElementById("detailsAntropometria");
@@ -2247,21 +2337,71 @@
             if (huboCambio) renderizarTablaLineasHIS();
         }
 
+        // ==================== MOTOR INSTANTÁNEO (0ms) DE AUTOCOMPLETADO CIE-10 / CPT ====================
+        let indiceCIE10EnMemoria = [];
+
+        function normalizarTextoBusqueda(txt) {
+            return String(txt || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim();
+        }
+
+        function reconstruirIndiceCIE10EnMemoria() {
+            const mapaUnico = new Map();
+            const baseOficial = Array.isArray(window.CATALOGO_CIE10_OFICIAL) ? window.CATALOGO_CIE10_OFICIAL : [];
+            baseOficial.forEach(item => {
+                const cod = (item.cod || "").trim().toUpperCase();
+                const desc = (item.desc || "").trim();
+                if (!cod || !desc) return;
+                mapaUnico.set(cod + "|" + desc.toUpperCase(), {
+                    cod: cod,
+                    desc: desc,
+                    cat: item.cat || "CIE-10 / HIS",
+                    norm: normalizarTextoBusqueda(`${cod} ${desc} ${item.kw || ""} ${item.cat || ""}`)
+                });
+            });
+
+            // Incorporar también todos los códigos CIE-10 / CPT existentes en los paquetes de 1_Catalogo_Maestro_HIS
+            if (Array.isArray(catalogoMaestro)) {
+                catalogoMaestro.forEach(p => {
+                    (p.lineas || []).forEach(l => {
+                        const cod = (l.cod || "").trim().toUpperCase();
+                        const desc = (l.desc || "").trim();
+                        if (!cod || !desc) return;
+                        const clave = cod + "|" + desc.toUpperCase();
+                        if (!mapaUnico.has(clave)) {
+                            mapaUnico.set(clave, {
+                                cod: cod,
+                                desc: desc,
+                                cat: p.prog || p.prof || "Paquete HIS",
+                                norm: normalizarTextoBusqueda(`${cod} ${desc} ${p.prog || ""}`)
+                            });
+                        }
+                    });
+                });
+            }
+            indiceCIE10EnMemoria = Array.from(mapaUnico.values());
+        }
+
         function renderizarTablaLineasHIS() {
             const container = document.getElementById('hisCardsContainer');
             if (!container || !paqueteSeleccionado) return;
+            if (indiceCIE10EnMemoria.length === 0) reconstruirIndiceCIE10EnMemoria();
             document.getElementById('lblCountLineas').innerText = paqueteSeleccionado.lineas.length;
             container.innerHTML = paqueteSeleccionado.lineas.map((l, i) => `
                 <div class="dx-card">
                     <div class="dx-row-1">
                         <div class="dx-num-badge">${i+1}</div>
-                        <input type="text" class="dx-desc-input" value="${l.desc}" onchange="paqueteSeleccionado.lineas[${i}].desc=this.value">
+                        <input type="text" id="inpDescLinea_${i}" class="dx-desc-input" value="${(l.desc || '').replace(/"/g, '&quot;')}" placeholder="Escriba enfermedad o diagnóstico (ej. faringitis, itu, diarrea, gastritis)..." autocomplete="off" oninput="alEscribirDiagnosticoLinea(${i}, this.value)" onfocus="alEscribirDiagnosticoLinea(${i}, this.value)" onblur="cerrarSugerenciasCIE10ConRetraso(${i})">
                     </div>
+                    <div id="cie10Suggest_${i}" class="cie10-suggest-list"></div>
                     ${l.inst && l.inst !== 'NINGUNO' ? `<span class="inst-hint">💡 Guía LAB: ${l.inst}</span>` : ''}
                     <div class="dx-row-2">
                         <div class="dx-subcol">
                             <label>TIPO DX</label>
-                            <select onchange="paqueteSeleccionado.lineas[${i}].dx=this.value">
+                            <select id="selDxLinea_${i}" onchange="paqueteSeleccionado.lineas[${i}].dx=this.value">
                                 <option value="P" ${l.dx==='P'?'selected':''}>P</option>
                                 <option value="D" ${l.dx==='D'?'selected':''}>D</option>
                                 <option value="R" ${l.dx==='R'?'selected':''}>R</option>
@@ -2281,11 +2421,132 @@
                         </div>
                         <div class="dx-subcol">
                             <label>CIE / CPT</label>
-                            <input type="text" class="cie-input" value="${l.cod}" onchange="paqueteSeleccionado.lineas[${i}].cod=this.value.toUpperCase()">
+                            <input type="text" id="inpCodLinea_${i}" class="cie-input" value="${l.cod || ''}" placeholder="CIE-10" autocomplete="off" oninput="alEscribirCodigoLinea(${i}, this.value)" onblur="cerrarSugerenciasCIE10ConRetraso(${i})">
                         </div>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function alEscribirDiagnosticoLinea(idx, valor) {
+            if (!paqueteSeleccionado || !paqueteSeleccionado.lineas[idx]) return;
+            paqueteSeleccionado.lineas[idx].desc = valor;
+            const box = document.getElementById(`cie10Suggest_${idx}`);
+            if (!box) return;
+
+            if (indiceCIE10EnMemoria.length === 0) reconstruirIndiceCIE10EnMemoria();
+            const q = normalizarTextoBusqueda(valor);
+            const esAsistencialLibre = /asistencial|consultorio|emergencia/i.test(`${paqueteSeleccionado.prog} ${paqueteSeleccionado.sub} ${paqueteSeleccionado.nombre}`);
+
+            // Si está vacío y es Medicina Asistencial / Emergencia, mostrar los más frecuentes al tocar el campo
+            let resultados = [];
+            if (!q) {
+                if (esAsistencialLibre && !paqueteSeleccionado.lineas[idx].cod) {
+                    resultados = indiceCIE10EnMemoria.slice(0, 12);
+                } else {
+                    box.style.display = "none";
+                    return;
+                }
+            } else if (q.length >= 2) {
+                const palabras = q.split(/\s+/).filter(Boolean);
+                resultados = indiceCIE10EnMemoria.filter(item =>
+                    palabras.every(w => item.norm.includes(w))
+                ).slice(0, 12);
+            } else {
+                box.style.display = "none";
+                return;
+            }
+
+            if (resultados.length === 0) {
+                box.style.display = "none";
+                return;
+            }
+
+            box.innerHTML = resultados.map(r => {
+                const descSafe = r.desc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                return `
+                    <div class="cie10-suggest-item" onmousedown="seleccionarDiagnosticoCIE10(${idx}, '${r.cod}', '${descSafe}')">
+                        <div style="text-align:left; line-height:1.25;">
+                            <div style="font-weight:700; color:var(--text-main);">${r.desc}</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">${r.cat}</div>
+                        </div>
+                        <span class="cie10-code-pill">${r.cod}</span>
+                    </div>
+                `;
+            }).join('');
+            box.style.display = "block";
+        }
+
+        function alEscribirCodigoLinea(idx, valorCod) {
+            if (!paqueteSeleccionado || !paqueteSeleccionado.lineas[idx]) return;
+            const codUp = (valorCod || "").toUpperCase().trim();
+            paqueteSeleccionado.lineas[idx].cod = codUp;
+            const inpCod = document.getElementById(`inpCodLinea_${idx}`);
+            if (inpCod && inpCod.value !== codUp) inpCod.value = codUp;
+
+            const box = document.getElementById(`cie10Suggest_${idx}`);
+            if (!box || codUp.length < 2) {
+                if (box) box.style.display = "none";
+                return;
+            }
+
+            if (indiceCIE10EnMemoria.length === 0) reconstruirIndiceCIE10EnMemoria();
+            const exacto = indiceCIE10EnMemoria.find(it => it.cod === codUp || it.cod.replace(".", "") === codUp.replace(".", ""));
+            if (exacto && !paqueteSeleccionado.lineas[idx].desc) {
+                paqueteSeleccionado.lineas[idx].desc = exacto.desc;
+                const inpDesc = document.getElementById(`inpDescLinea_${idx}`);
+                if (inpDesc) inpDesc.value = exacto.desc;
+            }
+
+            const sugerencias = indiceCIE10EnMemoria.filter(it =>
+                it.cod.startsWith(codUp) || it.cod.replace(".", "").startsWith(codUp.replace(".", ""))
+            ).slice(0, 8);
+
+            if (sugerencias.length === 0) {
+                box.style.display = "none";
+                return;
+            }
+
+            box.innerHTML = sugerencias.map(r => {
+                const descSafe = r.desc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                return `
+                    <div class="cie10-suggest-item" onmousedown="seleccionarDiagnosticoCIE10(${idx}, '${r.cod}', '${descSafe}')">
+                        <div style="text-align:left; line-height:1.25;">
+                            <div style="font-weight:700; color:var(--text-main);">${r.desc}</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">${r.cat}</div>
+                        </div>
+                        <span class="cie10-code-pill">${r.cod}</span>
+                    </div>
+                `;
+            }).join('');
+            box.style.display = "block";
+        }
+
+        function seleccionarDiagnosticoCIE10(idx, cod, desc) {
+            if (!paqueteSeleccionado || !paqueteSeleccionado.lineas[idx]) return;
+            paqueteSeleccionado.lineas[idx].desc = desc;
+            paqueteSeleccionado.lineas[idx].cod = cod;
+
+            const inpDesc = document.getElementById(`inpDescLinea_${idx}`);
+            const inpCod = document.getElementById(`inpCodLinea_${idx}`);
+            const box = document.getElementById(`cie10Suggest_${idx}`);
+            const selDx = document.getElementById(`selDxLinea_${idx}`);
+
+            if (inpDesc) inpDesc.value = desc;
+            if (inpCod) inpCod.value = cod;
+            if (box) box.style.display = "none";
+
+            mostrarNotificacion(`✅ CIE-10 asignado: ${cod} — Elija P, D o R`);
+            if (selDx) {
+                setTimeout(() => selDx.focus(), 80);
+            }
+        }
+
+        function cerrarSugerenciasCIE10ConRetraso(idx) {
+            setTimeout(() => {
+                const box = document.getElementById(`cie10Suggest_${idx}`);
+                if (box) box.style.display = "none";
+            }, 220);
         }
 
         function agregarLineaExtra() {
@@ -2294,8 +2555,13 @@
                 mostrarNotificacion("Máximo 16 líneas por atención");
                 return;
             }
-            paqueteSeleccionado.lineas.push({ desc: "Actividad / Diagnóstico adicional", cod: "", dx: "D", lab1: "", lab2: "", lab3: "", inst: "" });
+            paqueteSeleccionado.lineas.push({ desc: "", cod: "", dx: "D", lab1: "", lab2: "", lab3: "", inst: "" });
             renderizarTablaLineasHIS();
+            const nuevoIdx = paqueteSeleccionado.lineas.length - 1;
+            setTimeout(() => {
+                const el = document.getElementById(`inpDescLinea_${nuevoIdx}`);
+                if (el) el.focus();
+            }, 100);
         }
 
         // ==================== VALIDACIÓN GUIADA ANTES DE GUARDAR ====================
@@ -2358,7 +2624,8 @@
                 "FHB": { id: "txtFechaHb", nombre: "Fecha de última Hb" },
                 "PC": { id: "txtPC", nombre: "Perímetro Cefálico (PC)" },
                 "PAB": { id: "txtPab", nombre: "Perímetro Abdominal (Pab)" },
-                "FUR": { id: "txtFUR", nombre: "Fecha de Última Regla (FUR)" }
+                "FUR": { id: "txtFUR", nombre: "Fecha de Última Menstruación (FUM)" },
+                "FUM": { id: "txtFUR", nombre: "Fecha de Última Menstruación (FUM)" }
             };
 
             reqs.forEach(codReq => {
@@ -2586,7 +2853,7 @@
                             htmlBloque += `
                                 <tr>
                                     <td colspan="19" style="text-align:left; background:#f2f2f2; font-weight:bold; padding:2px 6px;">
-                                        ${numeroOrdenCasillero} &nbsp; NOMBRES Y APELLIDOS PACIENTE: ${at.nombres_paciente} &nbsp;&nbsp;|&nbsp;&nbsp; (*)FECHA DE NACIMIENTO: ${at.fecha_nac || '___/___/____'} &nbsp;&nbsp;|&nbsp;&nbsp; FECHA ÚLTIMO RESULTADO DE Hb: ${at.fecha_ult_hb || '___/___/____'} &nbsp;&nbsp;|&nbsp;&nbsp; FECHA DE ÚLTIMA REGLA: ${at.fur || '___/___/____'}
+                                        ${numeroOrdenCasillero} &nbsp; NOMBRES Y APELLIDOS PACIENTE: ${at.nombres_paciente} &nbsp;&nbsp;|&nbsp;&nbsp; (*)FECHA DE NACIMIENTO: ${at.fecha_nac || '___/___/____'} &nbsp;&nbsp;|&nbsp;&nbsp; FECHA ÚLTIMO RESULTADO DE Hb: ${at.fecha_ult_hb || '___/___/____'} &nbsp;&nbsp;|&nbsp;&nbsp; FECHA DE ÚLTIMA MENSTRUACIÓN (FUM): ${at.fur || '___/___/____'}
                                     </td>
                                 </tr>
                             `;
